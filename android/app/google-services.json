@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "157091660684",
+    "project_id": "dashain-and-tihar",
+    "storage_bucket": "dashain-and-tihar.appspot.com"
+  },
+  "client": [
+    
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:157091660684:android:b48f587d0e0cb7365d8ca9",
+        "android_client_info": {
+          "package_name": "quotes.status.creator"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "157091660684-553n0m8u6qkqnc2cj696ge494reuiikb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAD3g-Y69XEhLMxmTdrZ6DvPVdGPkeurB8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "157091660684-553n0m8u6qkqnc2cj696ge494reuiikb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
