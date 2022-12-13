@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:quotes_status_creator/providers/ThemeProvider.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
@@ -17,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
+import 'Monetization/Adstate.dart';
 import 'utils/ReceiveIntent/Receive_intent.dart';
 import 'views/Editor/FlutterUtils.dart';
 
@@ -40,7 +42,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   await requestPermission(Permission.storage);
+
+  final initFuture = MobileAds.instance.initialize();
+  final adstate = AdState(initFuture);
+  await adstate.initAds();
   InitData initData = await init();
+
   await HiveInjector.setup();
   runApp(ProviderScope(
     child: MaterialApp(
