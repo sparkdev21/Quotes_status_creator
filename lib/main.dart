@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:quotes_status_creator/providers/ThemeProvider.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:quotes_status_creator/views/QuotesUI/UserQuotesPage.dart';
@@ -13,7 +12,6 @@ import './views/QuotesUI/TrendingQuotes.dart';
 import 'package:firebase_core/firebase_core.dart';
 import './Locator/locator.dart';
 import './injectors/hive_injector.dart';
-import './utils/Utilities.dart';
 import './views/Editor/SingleEditor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,7 +20,6 @@ import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'Monetization/AdmobHelper/AdmobHelper.dart';
 import 'Monetization/Adstate.dart';
 import 'utils/ReceiveIntent/Receive_intent.dart';
-import 'views/Editor/FlutterUtils.dart';
 import 'package:provider/provider.dart' as pr;
 
 const String homeRoute = "home";
@@ -44,7 +41,6 @@ void main() async {
   setup();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  await requestPermission(Permission.storage);
 
   final initFuture = MobileAds.instance.initialize();
   final adstate = AdState(initFuture);
@@ -87,7 +83,7 @@ class _MyAppState extends ConsumerState<MyApp> {
   @override
   void initState() {
     ref.read(managedblogProvider);
-    AppUtil.requestPermission();
+
     super.initState();
 
     //This shared intent work when application is in memory

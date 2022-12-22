@@ -65,6 +65,7 @@ dependencies:
   receive_sharing_intent: ^1.4.5
   riverpod_generator: ^1.0.4
   screenshot: ^1.2.3
+  share_plus: ^6.3.0
   shared_preferences: ^2.0.15
   showcaseview: ^1.1.8
   social_share: ^2.2.1

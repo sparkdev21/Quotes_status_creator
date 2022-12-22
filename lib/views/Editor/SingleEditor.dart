@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import '../../Monetization/Banners/small_banner.dart';
 import '/views/Editor/EditorNotifier.dart';
 import '/views/Editor/Messenger.dart';
@@ -17,7 +18,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:social_share/social_share.dart';
-
+import 'package:share_plus/share_plus.dart';
 import 'EditButtons.dart';
 import 'FlutterUtils.dart';
 import 'ImageCropper.dart';
@@ -118,12 +119,14 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
   }
 
   void download(context) async {
-    // bool isOnline = await InternetConnectionChecker().hasConnection;
-    // if (!isOnline) {
-    //   showInternetDialog(
-    //       context, "Internet Connetion is required to Share Images");
-    //   return;
-    // }
+    await requestPermission(Permission.storage)
+        .then((value) => print("status:$value"));
+    bool isOnline = await InternetConnectionChecker().hasConnection;
+    if (!isOnline) {
+      showInternetDialog(
+          context, "Internet Connetion is required to Download Images");
+      return;
+    }
     // _screenshotController
     //     .captureFromWidget(Container(
     //         padding: const EdgeInsets.all(30.0),
@@ -139,19 +142,87 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
     await screenshotController
         .capture(delay: const Duration(milliseconds: 10))
         .then((Uint8List? image) async {
+          if (image == null) {
+            Fluttertoast.showToast(msg: "Image Couldn't Be Saved");
+          }
+          final time = DateTime.now()
+              .toIso8601String()
+              .replaceAll('.', '')
+              .replaceAll(':', '');
+          final name = "Image_$time";
+          if (image != null) {
+            // final directory = await getApplicationDocumentsDirectory();
+            // final imagePath =
+            //     await File('${directory.path}/image_$name.png').create();
+
+            // await imagePath.writeAsBytes(image);
+            await ImageGallerySaver.saveImage(image, name: name);
+
+            // Fluttertoast.showToast(msg: "statsu:");
+          }
+
+          //   final directory = await getApplicationDocumentsDirectory();
+          //   final imagePath = await File('${directory.path}/image.png').create();
+          //   await imagePath.writeAsBytes(image);
+
+          //   /// Share Plugin
+          // }
+
+          // showInterstitialAd();
+          // Navigator.of(context).push(MaterialPageRoute(
+          //     builder: (context) => SharePageFinal(
+          //           imageBytes: image as Uint8List,
+          //           quote: tempQuote!,
+          //         )));
+        })
+        .then((value) =>
+            ref.read(editorNotifier.notifier).showDownInterstitialAd(context))
+        .then((value) =>
+            ref.read(editorNotifier.notifier).readyforScreenshot(false));
+  }
+
+  void share(context) async {
+    await requestPermission(Permission.storage);
+    bool isOnline = await InternetConnectionChecker().hasConnection;
+    if (!isOnline) {
+      showInternetDialog(
+          context, "Internet Connetion is required to Download Images");
+      return;
+    }
+    // bool isOnline = await InternetConnectionChecker().hasConnection;
+    // if (!isOnline) {
+    //   showInternetDialog(
+    //       context, "Internet Connetion is required to Share Images");
+    //   return;
+    // }
+
+    await screenshotController
+        .capture(delay: const Duration(milliseconds: 10))
+        .then((Uint8List? image) async {
       if (image == null) {
         Fluttertoast.showToast(msg: "Image is null");
       }
+      final time = DateTime.now()
+          .toIso8601String()
+          .replaceAll('.', '-')
+          .replaceAll(':', '-');
+      final name = "Image_$time";
 
       if (image != null) {
         final directory = await getApplicationDocumentsDirectory();
+
         final imagePath = await File('${directory.path}/image.png').create();
-        await requestPermission(Permission.storage)
-            .then((value) => print("status:$value"));
 
         await imagePath.writeAsBytes(image);
         await ImageGallerySaver.saveImage(image);
 
+        // SocialShare.shareFacebookStory(
+        //     imagePath.path, "#00FFFFE", "#7HBDHBS", "https;google.com");
+
+        // Share.shareXFiles([file], text: 'Great picture');
+        // Share.shareXFiles([XFile(imagePath.path)],
+        //     subject: widget.quote, text: 'Great picture');
+        _onShareWithResult(context, imagePath.path);
         // Fluttertoast.showToast(msg: "statsu:");
       }
 
@@ -168,7 +239,48 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
       //           imageBytes: image as Uint8List,
       //           quote: tempQuote!,
       //         )));
-    });
+    }).then((value) =>
+            ref.read(editorNotifier.notifier).readyforScreenshot(false));
+  }
+
+  void _onShareWithResult(BuildContext context, String filePath) async {
+    final box = context.findRenderObject() as RenderBox?;
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    ShareResult shareResult;
+    if (filePath != '') {
+      final files = XFile(filePath);
+
+      shareResult = await Share.shareXFiles([files],
+          text: "Text",
+          subject: "subject",
+          sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size);
+    } else {
+      shareResult = await Share.shareWithResult("text",
+          subject: "subject",
+          sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size);
+    }
+    if (shareResult.status == ShareResultStatus.success) {
+      ref.read(editorNotifier.notifier).showDownInterstitialAd(context);
+    }
+  }
+
+  SnackBar getResultSnackBar(ShareResult result) {
+    return SnackBar(
+      duration: Duration(minutes: 1),
+      content: Consumer(builder: (context, ref, _) {
+        if (result.status == ShareResultStatus.success) {
+          ref.read(editorNotifier.notifier).showDownInterstitialAd(context);
+        }
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Share result: ${result.status}"),
+            if (result.status == ShareResultStatus.success) Text("data")
+          ],
+        );
+      }),
+    );
   }
 
   showRemoveDialog(context, WidgetRef ref) {
@@ -180,22 +292,23 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Center(child: Text("do you want to remove photo")),
+                    Center(child: Text("Do you want to remove Image?")),
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         IconButton(
                             onPressed: () {
                               Navigator.pop(context);
                             },
                             icon: Icon(Icons.close)),
-                        IconButton(
+                        ElevatedButton(
                             onPressed: () {
                               ref
                                   .read(editorNotifier.notifier)
                                   .setBackgroundImage();
                               Navigator.pop(context);
                             },
-                            icon: Icon(Icons.done))
+                            child: Icon(Icons.done))
                       ],
                     ),
                   ],
@@ -329,9 +442,7 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
               if (ref.read(editorNotifier.notifier).croppedFile != null) {
                 showRemoveDialog(context, ref);
               }
-              ref
-                  .read(editorNotifier.notifier)
-                  .setContainerColor(_random.nextInt(12));
+              ref.read(editorNotifier.notifier).setContainerColor();
             },
 
             onLongPress: () =>
@@ -429,6 +540,12 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
                             compressQuality: 100,
                             uiSettings: buildUiSettings(context),
                           )
+                          .onError((error, stackTrace) {
+                            print("color:Error cropiing");
+                            return ref
+                                .read(editorNotifier.notifier)
+                                .setCroppedImage(null);
+                          })
                           .then(
                             (value) => ref
                                 .read(editorNotifier.notifier)
@@ -460,8 +577,9 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
                     // showInterstitialAd();
 
                     ref.read(editorNotifier.notifier).setShowTextSizer(false);
+                    ref.read(editorNotifier.notifier).readyforScreenshot(true);
                     download(context);
-                    ref.read(editorNotifier.notifier).showInterstitialAd();
+
                     // showDownloadedDialog(context);
                   },
                   icon: const Icon(
@@ -478,7 +596,11 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
             children: [
               IconButton(
                   tooltip: 'Share ',
-                  onPressed: () => download(context),
+                  onPressed: () {
+                    ref.read(editorNotifier.notifier).setShowTextSizer(false);
+                    ref.read(editorNotifier.notifier).readyforScreenshot(true);
+                    share(context);
+                  },
                   icon: const Icon(
                     Icons.share,
                     size: 30,
@@ -535,10 +657,14 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
                                           ref
                                               .watch(editorNotifier.notifier)
                                               .initialFilterColor,
-                                          ref
-                                                  .watch(
-                                                      editorNotifier.notifier)
-                                                  .changeAssetcolor
+                                          !ref
+                                                      .watch(editorNotifier
+                                                          .notifier)
+                                                      .showFloatingButtion &&
+                                                  ref
+                                                      .watch(editorNotifier
+                                                          .notifier)
+                                                      .changeAssetcolor
                                               ? BlendMode.srcATop
                                               : BlendMode.dstATop),
                                       fit: BoxFit.fill,
@@ -609,20 +735,66 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
                             !ref
                                 .watch(editorNotifier.notifier)
                                 .isTakingScreenshot,
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 0),
-                          child: Align(
-                            alignment: Alignment.bottomRight,
-                            child: FloatingActionButton.small(
-                              heroTag: "color",
-                              backgroundColor: ref
-                                  .watch(editorNotifier.notifier)
-                                  .initialFilterColor,
-                              onPressed: () => ref
-                                  .read(editorNotifier.notifier)
-                                  .setFilterColor(ref
+                        child: InkWell(
+                          onLongPress: () => ref
+                              .read(editorNotifier.notifier)
+                              .setDefaultContainerColor(),
+                          child: Visibility(
+                            visible: !ref
+                                    .watch(editorNotifier.notifier)
+                                    .isTakingScreenshot &&
+                                ref
+                                    .watch(editorNotifier.notifier)
+                                    .showFloatingButtion,
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 0),
+                              child: Align(
+                                alignment: Alignment.bottomRight,
+                                child: FloatingActionButton.small(
+                                  heroTag: "color",
+                                  backgroundColor: ref
                                       .watch(editorNotifier.notifier)
-                                      .paletteColors[_random.nextInt(12)]),
+                                      .initialContainerColor,
+                                  onPressed: () => ref
+                                      .read(editorNotifier.notifier)
+                                      .setContainerColorfb(),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Visibility(
+                        visible: ref
+                                    .watch(editorNotifier.notifier)
+                                    .croppedFile ==
+                                null &&
+                            !ref.watch(editorNotifier.notifier).gradientMode &&
+                            !ref
+                                .watch(editorNotifier.notifier)
+                                .isTakingScreenshot,
+                        child: InkWell(
+                          onLongPress: () => ref
+                              .read(editorNotifier.notifier)
+                              .setDefaultAssetColor(),
+                          child: Visibility(
+                            visible: !ref
+                                .watch(editorNotifier.notifier)
+                                .isTakingScreenshot,
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 0),
+                              child: Align(
+                                alignment: Alignment.bottomLeft,
+                                child: FloatingActionButton.small(
+                                  heroTag: "assetColor",
+                                  backgroundColor: ref
+                                      .watch(editorNotifier.notifier)
+                                      .initialFilterColor,
+                                  onPressed: () => ref
+                                      .read(editorNotifier.notifier)
+                                      .setFilterColor(),
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -771,7 +943,7 @@ class ColorPallette extends StatelessWidget {
             itemCount: ref.watch(editorNotifier.notifier).paletteColors.length,
             itemBuilder: (BuildContext context, i) => GestureDetector(
                 onTap: () {
-                  ref.read(editorNotifier.notifier).setContainerColor(i);
+                  ref.read(editorNotifier.notifier).setContainerColorloop(i);
                 },
                 child: Container(
                   height: 50,
@@ -803,22 +975,32 @@ class FramePallette extends StatelessWidget {
                 ),
             scrollDirection: Axis.horizontal,
             itemCount: ref.watch(editorNotifier.notifier).assetImages.length,
-            itemBuilder: (BuildContext context, i) => GestureDetector(
-                onTap: () {
-                  ref.read(editorNotifier.notifier).setAssetImage(i);
-                },
-                child: Container(
-                    height: 100,
-                    width: 100,
-                    decoration: BoxDecoration(
-                        color: Colors.black,
-                        image: DecorationImage(
-                          colorFilter: ColorFilter.mode(
-                              Colors.transparent, BlendMode.srcATop),
-                          fit: BoxFit.fill,
-                          image: AssetImage(
-                              "assets/images/${ref.watch(editorNotifier.notifier).assetImages[i]}"),
-                        ))))),
+            itemBuilder: (BuildContext context, i) => i == 0
+                ? Container(
+                    height: 50,
+                    width: 50,
+                    color: Colors.red,
+                    child: IconButton(
+                        onPressed: () {
+                          ref.read(editorNotifier.notifier).clearbackground();
+                        },
+                        icon: Icon(Icons.not_interested_sharp)))
+                : GestureDetector(
+                    onTap: () =>
+                        ref.read(editorNotifier.notifier).setAssetImage(i),
+                    child: Container(
+                        height: 100,
+                        width: 100,
+                        decoration: BoxDecoration(
+                            color: Colors.black,
+                            image: DecorationImage(
+                              colorFilter: ColorFilter.mode(
+                                  Colors.transparent, BlendMode.srcATop),
+                              fit: BoxFit.fill,
+                              image: AssetImage(
+                                  "assets/images/${ref.watch(editorNotifier.notifier).assetImages[i]}"),
+                            ))),
+                  )),
       );
     });
   }

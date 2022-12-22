@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:quotes_status_creator/Constants/Thmes.dart';
 
 import '../../Monetization/AdHelpers.dart';
 import '/views/Editor/AlertStatefulDialog.dart';
@@ -60,6 +61,7 @@ class EditorNotifier extends ChangeNotifier {
     Colors.red,
     Colors.brown,
     Colors.green,
+    Colors.transparent,
     Colors.indigoAccent,
     Colors.lime,
     Colors.cyan,
@@ -67,7 +69,8 @@ class EditorNotifier extends ChangeNotifier {
     Colors.lightGreen,
     Colors.pink,
     Colors.teal,
-    Colors.yellow
+    Colors.yellow,
+    Colors.transparent
   ];
   final List<String> fonts = [
     'Billabong',
@@ -82,8 +85,8 @@ class EditorNotifier extends ChangeNotifier {
     'OstrichSans',
   ];
   final List<String> assetImages = [
+    "ini.png",
     "bg.png",
-    "card5.png",
     "1.png",
     "2.png",
     "3.png",
@@ -202,6 +205,31 @@ class EditorNotifier extends ChangeNotifier {
         ));
   }
 
+  void showDownInterstitialAd(context) {
+    if (interstitialAd == null) {
+      successToast(context);
+      debugPrint('Warning: attempt to show interstitial before loaded.');
+      return;
+    }
+    interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+      onAdShowedFullScreenContent: (InterstitialAd ad) =>
+          debugPrint('ad onAdShowedFullScreenContent.'),
+      onAdDismissedFullScreenContent: (InterstitialAd ad) {
+        debugPrint('$ad onAdDismissedFullScreenContent.');
+        ad.dispose();
+        successToast(context);
+        createInterstitialAd();
+      },
+      onAdFailedToShowFullScreenContent: (InterstitialAd ad, AdError error) {
+        debugPrint('$ad onAdFailedToShowFullScreenContent: $error');
+        ad.dispose();
+        createInterstitialAd();
+      },
+    );
+    interstitialAd!.show();
+    interstitialAd = null;
+  }
+
   void showInterstitialAd() {
     if (interstitialAd == null) {
       debugPrint('Warning: attempt to show interstitial before loaded.');
@@ -249,7 +277,7 @@ class EditorNotifier extends ChangeNotifier {
     interstitialAd = null;
   }
 
-// protrait Mode
+// protrait Modeown
   void protraitMode() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
         overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom]);
@@ -355,8 +383,12 @@ class EditorNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool _showFloatingColorButtion = false;
+  get showFloatingButtion => _showFloatingColorButtion;
+
   void setBackgroundImage() {
-    imagechangeCounterAds++;
+    _showFloatingColorButtion = true;
+
     adsManger(imagechangeCounterAds, 'image');
     _isAssetImageActive = true;
     croppedFile = null;
@@ -369,6 +401,16 @@ class EditorNotifier extends ChangeNotifier {
     String nextAssetImage = assetImages[assetIndex + 1];
     initialAssetImage = nextAssetImage;
     debugPrint(initialAssetImage);
+    notifyListeners();
+  }
+
+  void clearbackground() {
+    _isAssetImageActive = false;
+    croppedFile = null;
+    changeAssetcolor = false;
+    initialContainerColor = Colors.white;
+    initialFilterColor = Colors.white;
+    _showFloatingColorButtion = false;
     notifyListeners();
   }
 
@@ -403,7 +445,9 @@ class EditorNotifier extends ChangeNotifier {
 
     return _isAssetImageActive
         ? AssetImage('assets/images/upload.jpg')
-        : FileImage(File(croppedFile!.path));
+        : croppedFile == null
+            ? AssetImage('assets/images/$initialAssetImage')
+            : (File(croppedFile!.path));
   }
 
   setCroppedImage(var s) {
@@ -421,8 +465,25 @@ class EditorNotifier extends ChangeNotifier {
 
 // filter Colors
   Color initialFilterColor = Colors.white;
-  setFilterColor(Color value) {
-    initialFilterColor = value;
+
+  int _colorIndex = 0;
+  setFilterColor() {
+    _colorIndex++;
+    if (_colorIndex >= (paletteColors.length) - 1) {
+      _colorIndex = 0;
+    }
+
+    initialFilterColor = paletteColors[_colorIndex];
+    notifyListeners();
+  }
+
+  setDefaultContainerColor() {
+    initialContainerColor = Colors.transparent;
+    notifyListeners();
+  }
+
+  setDefaultAssetColor() {
+    initialFilterColor = Colors.transparent;
     notifyListeners();
   }
 
@@ -452,17 +513,64 @@ class EditorNotifier extends ChangeNotifier {
 
   //Container Colour
   Color initialContainerColor = Colors.white;
+  int _bgcColorIndex = 0;
 
-  void setContainerColor(value) {
-    backgroundColorCountads++;
-    adsManger(backgroundColorCountads, 'backColor');
+  void setContainerColor() {
     if (croppedFile != null) {
       return;
     }
+
     gradientMode = false;
     changeAssetcolor = true;
     _showTextSizer = false;
-    initialContainerColor = paletteColors[value];
+    _bgcColorIndex++;
+    if (_bgcColorIndex >= (paletteColors.length) - 1) {
+      _bgcColorIndex = 0;
+    }
+    backgroundColorCountads++;
+    adsManger(backgroundColorCountads, 'backColor');
+
+    initialContainerColor = paletteColors[_bgcColorIndex];
+    initialFilterColor = paletteColors[_bgcColorIndex < 0 ? 0 : _bgcColorIndex];
+    if (!_isAssetImageActive) {
+      initialFilterColor =
+          paletteColors[_bgcColorIndex < 0 ? 0 : _bgcColorIndex];
+    }
+
+    print("color:${paletteColors[_bgcColorIndex].toString()}");
+    _showFloatingColorButtion = false; //hide two buttons
+    notifyListeners();
+  }
+
+  //from floating action button
+  int _counterfb = 0;
+  void setContainerColorfb() {
+    _showFloatingColorButtion = false;
+    _counterfb += 1;
+    if (_counterfb >= (paletteColors.length) - 1) {
+      _counterfb = 0;
+    }
+    backgroundColorCountads++;
+    adsManger(backgroundColorCountads, 'backColor');
+
+    initialContainerColor = paletteColors[_counterfb];
+
+    notifyListeners();
+  }
+
+  void setContainerColorloop(int i) {
+    backgroundColorCountads++;
+    adsManger(backgroundColorCountads, 'backColor');
+
+    gradientMode = false;
+    changeAssetcolor = false;
+    _showTextSizer = false;
+
+    initialContainerColor = paletteColors[i];
+    if (!_isAssetImageActive) {
+      initialFilterColor = paletteColors[i];
+    }
+
     notifyListeners();
   }
 
@@ -514,11 +622,8 @@ class EditorNotifier extends ChangeNotifier {
   }
 
   saveTextImageToGallery(context) async {
-    if (await requestPermission(Permission.storage)) {
-      Fluttertoast.showToast(msg: "Storage Available");
-    }
-
     readyforScreenshot(true);
+
     _screenshotController
         .capture(delay: Duration(seconds: 1))
         .then((Uint8List? image) {
@@ -553,31 +658,6 @@ class EditorNotifier extends ChangeNotifier {
     readyforScreenshot(false);
     debugPrint(name.toString());
   }
-
-//share manger
-  // void shareManager(context) async {
-  //   // bool isOnline = await InternetConnectionChecker().hasConnection;
-  //   // if (!isOnline) {
-  //   //   showInternetDialog(
-  //   //       context, "Internet Connetion is required to Share Images");
-  //   //   return;
-  //   // }
-
-  //   _screenshotController
-  //       .capture(delay: Duration(milliseconds: 1))
-  //       .then((Uint8List? image) async {
-  //     saveTextImage(image!);
-
-  //     // showInterstitialAd();
-  //     // Navigator.of(context).push(MaterialPageRoute(
-  //     //     builder: (context) => SharePageFinal(
-  //     //           imageBytes: image as Uint8List,
-  //     //           quote: tempQuote!,
-  //     //         )));
-
-  //     readyforScreenshot(false);
-  //   });
-  // }
 
   // Internet Checker
   checkNetwork() async {
