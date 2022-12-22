@@ -5,15 +5,11 @@ import 'package:quotes_status_creator/Constants/Thmes.dart';
 
 import '../../Monetization/AdHelpers.dart';
 import '/views/Editor/AlertStatefulDialog.dart';
-import '/views/Editor/FlutterUtils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_cropper/image_cropper.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:screenshot/screenshot.dart';
 
 import 'ImageCropper.dart';
@@ -54,16 +50,16 @@ class EditorNotifier extends ChangeNotifier {
   ];
   final List<Color> _paletteColors = [
     Colors.white,
-    Colors.black,
-    Colors.white,
     Colors.red,
     Colors.blue,
+    Colors.black,
     Colors.red,
     Colors.brown,
     Colors.green,
     Colors.transparent,
     Colors.indigoAccent,
     Colors.lime,
+    Colors.white,
     Colors.cyan,
     Colors.deepPurple,
     Colors.lightGreen,
@@ -165,7 +161,7 @@ class EditorNotifier extends ChangeNotifier {
       showInterstitialAd();
       clearadsCount();
     }
-    if (button == 'image' && value >= 4) {
+    if (button == 'image' && value >= 5) {
       showInterstitialAd();
       clearadsCount();
     }
@@ -207,7 +203,7 @@ class EditorNotifier extends ChangeNotifier {
 
   void showDownInterstitialAd(context) {
     if (interstitialAd == null) {
-      successToast(context);
+      successToast(context, null);
       debugPrint('Warning: attempt to show interstitial before loaded.');
       return;
     }
@@ -217,7 +213,32 @@ class EditorNotifier extends ChangeNotifier {
       onAdDismissedFullScreenContent: (InterstitialAd ad) {
         debugPrint('$ad onAdDismissedFullScreenContent.');
         ad.dispose();
-        successToast(context);
+        successToast(context, null);
+        createInterstitialAd();
+      },
+      onAdFailedToShowFullScreenContent: (InterstitialAd ad, AdError error) {
+        debugPrint('$ad onAdFailedToShowFullScreenContent: $error');
+        ad.dispose();
+        createInterstitialAd();
+      },
+    );
+    interstitialAd!.show();
+    interstitialAd = null;
+  }
+
+  void showShareInterstitialAd(context) {
+    if (interstitialAd == null) {
+      successToast(context, "Shared Successfully");
+      debugPrint('Warning: attempt to show interstitial before loaded.');
+      return;
+    }
+    interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+      onAdShowedFullScreenContent: (InterstitialAd ad) =>
+          debugPrint('ad onAdShowedFullScreenContent.'),
+      onAdDismissedFullScreenContent: (InterstitialAd ad) {
+        debugPrint('$ad onAdDismissedFullScreenContent.');
+        ad.dispose();
+        successToast(context, "Shared Successfully");
         createInterstitialAd();
       },
       onAdFailedToShowFullScreenContent: (InterstitialAd ad, AdError error) {
@@ -285,6 +306,15 @@ class EditorNotifier extends ChangeNotifier {
   }
 
 // Active Widget Setter
+
+  int _currentWidget = 10;
+  int get currentWidget => _currentWidget;
+
+  setCurrentActiveWidget(value) {
+    _currentWidget = value;
+    notifyListeners();
+  }
+
   Enum _activeWidget = Widgets.None;
   get activeWidget => _activeWidget;
   widgetSetter(Enum value) {
@@ -295,6 +325,15 @@ class EditorNotifier extends ChangeNotifier {
     }
     _activeWidget = value;
 
+    notifyListeners();
+  }
+
+  //Loading Infdicator while sharing
+  bool _showCircularProgress = false;
+  get showCircularProgress => _showCircularProgress;
+
+  decideCircularProgress(bool value) {
+    _showCircularProgress = value;
     notifyListeners();
   }
 
@@ -317,6 +356,7 @@ class EditorNotifier extends ChangeNotifier {
     textColorCountAds++;
     adsManger(textColorCountAds, 'textColor');
     initialTextColor = value;
+    setCurrentActiveWidget(4);
     notifyListeners();
   }
 
@@ -359,11 +399,12 @@ class EditorNotifier extends ChangeNotifier {
     }
     String nextFlashcard = fonts[currentIndex + 1];
     _fontfamily = nextFlashcard;
+    setCurrentActiveWidget(3);
     notifyListeners();
   }
 
 // Background Image
-  String initialAssetImage = 'upload.jpg';
+  String initialAssetImage = 'back.png';
   Uint8List? imagebytes;
 
   bool _isAssetImageActive = true;
@@ -387,6 +428,7 @@ class EditorNotifier extends ChangeNotifier {
   get showFloatingButtion => _showFloatingColorButtion;
 
   void setBackgroundImage() {
+    imagechangeCounterAds++;
     _showFloatingColorButtion = true;
 
     adsManger(imagechangeCounterAds, 'image');
@@ -401,6 +443,7 @@ class EditorNotifier extends ChangeNotifier {
     String nextAssetImage = assetImages[assetIndex + 1];
     initialAssetImage = nextAssetImage;
     debugPrint(initialAssetImage);
+    setCurrentActiveWidget(1);
     notifyListeners();
   }
 
@@ -483,6 +526,12 @@ class EditorNotifier extends ChangeNotifier {
   }
 
   setDefaultAssetColor() {
+    if (_currentWidget == 0) {
+      clearbackground();
+      notifyListeners();
+      return;
+    }
+
     initialFilterColor = Colors.transparent;
     notifyListeners();
   }
@@ -508,6 +557,7 @@ class EditorNotifier extends ChangeNotifier {
     changeAssetcolor = false;
     _showTextSizer = false;
     _randomGradient = value;
+    setCurrentActiveWidget(2);
     notifyListeners();
   }
 
@@ -538,7 +588,8 @@ class EditorNotifier extends ChangeNotifier {
     }
 
     print("color:${paletteColors[_bgcColorIndex].toString()}");
-    _showFloatingColorButtion = false; //hide two buttons
+    _showFloatingColorButtion = false;
+    setCurrentActiveWidget(1); //hide two buttons
     notifyListeners();
   }
 
@@ -563,7 +614,7 @@ class EditorNotifier extends ChangeNotifier {
     adsManger(backgroundColorCountads, 'backColor');
 
     gradientMode = false;
-    changeAssetcolor = false;
+    changeAssetcolor = true;
     _showTextSizer = false;
 
     initialContainerColor = paletteColors[i];
@@ -621,43 +672,43 @@ class EditorNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  saveTextImageToGallery(context) async {
-    readyforScreenshot(true);
+  // saveTextImageToGallery(context) async {
+  //   readyforScreenshot(true);
 
-    _screenshotController
-        .capture(delay: Duration(seconds: 1))
-        .then((Uint8List? image) {
-      if (image != null) {
-        saveTextImage(image);
-      }
-      Fluttertoast.showToast(msg: "Couldnot Capture");
+  //   _screenshotController
+  //       .capture(delay: Duration(seconds: 1))
+  //       .then((Uint8List? image) {
+  //     if (image != null) {
+  //       saveTextImage(image);
+  //     }
+  //     Fluttertoast.showToast(msg: "Couldnot Capture");
 
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   const SnackBar(
-      //     content: Text('Image saved to gallery.'),
-      //   ),
-      // );
-    }).catchError((err) => debugPrint(err));
-  }
+  //     // ScaffoldMessenger.of(context).showSnackBar(
+  //     //   const SnackBar(
+  //     //     content: Text('Image saved to gallery.'),
+  //     //   ),
+  //     // );
+  //   }).catchError((err) => debugPrint(err));
+  // }
 
-  saveTextImage(Uint8List bytes) async {
-    final time = DateTime.now()
-        .toIso8601String()
-        .replaceAll('.', '-')
-        .replaceAll(':', '-');
-    final name = "screenshot_$time";
-    // Navigator.of(context).push(MaterialPageRoute(
-    //     builder: (context) => WidgetEditableImage(
-    //           imagem: bytes,
-    //           callBackFunc: callback2,
-    //           key: UniqueKey(),
-    //         )));
+  // saveTextImage(Uint8List bytes) async {
+  //   final time = DateTime.now()
+  //       .toIso8601String()
+  //       .replaceAll('.', '-')
+  //       .replaceAll(':', '-');
+  //   final name = "screenshot_$time";
+  //   // Navigator.of(context).push(MaterialPageRoute(
+  //   //     builder: (context) => WidgetEditableImage(
+  //   //           imagem: bytes,
+  //   //           callBackFunc: callback2,
+  //   //           key: UniqueKey(),
+  //   //         )));
 
-    await requestPermission(Permission.storage);
-    await ImageGallerySaver.saveImage(bytes, name: name);
-    readyforScreenshot(false);
-    debugPrint(name.toString());
-  }
+  //   await requestPermission(Permission.storage);
+  //   await ImageGallerySaver.saveImage(bytes, name: name);
+  //   readyforScreenshot(false);
+  //   debugPrint(name.toString());
+  // }
 
   // Internet Checker
   checkNetwork() async {
@@ -665,6 +716,7 @@ class EditorNotifier extends ChangeNotifier {
   }
 
   showTextSizerDialog(context) {
+    setCurrentActiveWidget(5);
     debugPrint("aayo");
     showDialog(
         context: context,

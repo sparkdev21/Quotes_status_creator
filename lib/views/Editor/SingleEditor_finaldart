@@ -277,6 +277,25 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
     }
   }
 
+  SnackBar getResultSnackBar(ShareResult result) {
+    return SnackBar(
+      duration: Duration(minutes: 1),
+      content: Consumer(builder: (context, ref, _) {
+        if (result.status == ShareResultStatus.success) {
+          ref.read(editorNotifier.notifier).showDownInterstitialAd(context);
+        }
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Share result: ${result.status}"),
+            if (result.status == ShareResultStatus.success) Text("data")
+          ],
+        );
+      }),
+    );
+  }
+
   showRemoveDialog(context, WidgetRef ref) {
     showModalBottomSheet(
         context: context,
@@ -410,8 +429,6 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
         });
   }
 
-  final Color _selectedColor = Colors.green.shade200;
-
   @override
   Widget build(BuildContext context) {
     ref.watch(editorNotifier);
@@ -422,13 +439,7 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           EditButton(
-            color: ref.watch(editorNotifier.notifier).currentWidget == 0
-                ? _selectedColor
-                : null,
-            ontap: () {
-              ref.read(editorNotifier.notifier).setBackgroundImage();
-              ref.read(editorNotifier.notifier).setCurrentActiveWidget(0);
-            },
+            ontap: () => ref.read(editorNotifier.notifier).setBackgroundImage(),
             onLongPress: () => ref
                 .read(editorNotifier.notifier)
                 .widgetSetter(Widgets.AssetImage),
@@ -437,18 +448,14 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
           ),
 
           EditButton(
-            color: ref.watch(editorNotifier.notifier).currentWidget == 1
-                ? _selectedColor
-                : null,
             // ontap: () => ref.read(editorNotifier.notifier).setContainerColor(ref
             //     .read(editorNotifier.notifier)
             //     .paletteColors[_random.nextInt(12)]),
             ontap: () {
-              if (ref.watch(editorNotifier.notifier).croppedFile != null) {
+              if (ref.read(editorNotifier.notifier).croppedFile != null) {
                 showRemoveDialog(context, ref);
               }
               ref.read(editorNotifier.notifier).setContainerColor();
-              ref.read(editorNotifier.notifier).setCurrentActiveWidget(1);
             },
 
             onLongPress: () =>
@@ -457,16 +464,10 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
             icon: Icons.color_lens,
           ),
           EditButton(
-            color: ref.watch(editorNotifier.notifier).currentWidget == 2
-                ? _selectedColor
-                : null,
             ontap: () {
-              if (ref.watch(editorNotifier.notifier).croppedFile != null) {
-                //read to watch
+              if (ref.read(editorNotifier.notifier).croppedFile != null) {
                 showRemoveDialog(context, ref);
               }
-              ref.read(editorNotifier.notifier).setCurrentActiveWidget(2);
-
               ref
                   .read(editorNotifier.notifier)
                   .setGradientColor(_random.nextInt(123));
@@ -478,13 +479,7 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
             icon: Icons.gradient,
           ),
           EditButton(
-            color: ref.watch(editorNotifier.notifier).currentWidget == 3
-                ? _selectedColor
-                : null,
-            ontap: () {
-              ref.read(editorNotifier.notifier).randomFont();
-              ref.read(editorNotifier.notifier).setCurrentActiveWidget(3);
-            },
+            ontap: () => ref.read(editorNotifier.notifier).randomFont(),
             onLongPress: () =>
                 ref.read(editorNotifier.notifier).widgetSetter(Widgets.Font),
             title: "Font",
@@ -497,14 +492,10 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
           //   icon: Icons.text_format_outlined,
           // )
           EditButton(
-            color: ref.watch(editorNotifier.notifier).currentWidget == 4
-                ? _selectedColor
-                : null,
             ontap: () {
-              int genInt = ref.watch(editorNotifier.notifier).genTextlooper();
+              int genInt = ref.read(editorNotifier.notifier).genTextlooper();
               ref.read(editorNotifier.notifier).setTextColor(
                   ref.read(editorNotifier.notifier).textColors[genInt]);
-              ref.read(editorNotifier.notifier).setCurrentActiveWidget(4);
             },
             onLongPress: () => ref
                 .read(editorNotifier.notifier)
@@ -514,13 +505,9 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
           ),
 
           EditButton(
-            color: ref.watch(editorNotifier.notifier).currentWidget == 5
-                ? _selectedColor
-                : null,
             ontap: () {
               ref.read(editorNotifier.notifier).showTextSizerDialog(context);
               ref.read(editorNotifier.notifier).widgetSetter(Widgets.None);
-              ref.read(editorNotifier.notifier).setCurrentActiveWidget(5);
             },
             onLongPress: () {
               ref.read(editorNotifier.notifier).showTextSizerDialog(context);
@@ -537,13 +524,7 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
           //   icon: Icons.edit,
           // ),
           EditButton(
-            color: ref.watch(editorNotifier.notifier).currentWidget == 6
-                ? _selectedColor
-                : null,
-            ontap: () {
-              ref.read(editorNotifier.notifier).setCurrentActiveWidget(6);
-              showEditText(context, ref);
-            },
+            ontap: () => showEditText(context, ref),
             onLongPress: () {},
             title: "Edit",
             icon: Icons.edit,
@@ -662,40 +643,8 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
     return Material(
       color: Theme.of(context).colorScheme.background,
       child: Scaffold(
-        // bottomNavigationBar: BottomNavigationBar(
-        //   selectedItemColor: Colors.blue,
-        //   backgroundColor: Colors.amberAccent,
-        //   items: <BottomNavigationBarItem>[
-        //     BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-        //     BottomNavigationBarItem(
-        //       icon: Icon(Icons.camera),
-        //       label: 'Categories',
-        //     ),
-        //     BottomNavigationBarItem(
-        //       icon: Icon(Icons.local_fire_department_rounded),
-        //       label: 'User Quotes',
-        //     ),
-        //     BottomNavigationBarItem(
-        //       icon: Icon(Icons.settings),
-        //       label: 'Settings',
-        //     ),
-
-        //     BottomNavigationBarItem(
-        //       icon: Icon(Icons.settings),
-        //       label: 'Settings',
-        //     ),
-        //     // BottomNavigationBarItem(
-        //     //   icon: Icon(Icons.settings),
-        //     //   label: 'Settings',
-        //     // ),
-        //   ],
-        //   currentIndex: selectedIndex,
-        //   onTap: ((value) {
-        //     setState(() {
-        //       selectedIndex = value;
-        //     });
-        //   }),
-        // ),
+        bottomNavigationBar:
+            BottomAppBar(child: SizedBox(height: 50, child: bottomButtons)),
         body: SafeArea(
           child: Column(
             children: [
@@ -903,7 +852,7 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
               // WidgetDecider.deciderWidget(
               //     ref.watch(editorNotifier.notifier).activeWidget),
 
-              bottomButtons
+              // bottomButtons
             ],
           ),
         ),

@@ -5,6 +5,7 @@ class EditButton extends StatelessWidget {
   final VoidCallback onLongPress;
 
   final IconData icon;
+  final Color? color;
   final String title;
   const EditButton({
     Key? key,
@@ -12,6 +13,7 @@ class EditButton extends StatelessWidget {
     required this.onLongPress,
     required this.title,
     required this.icon,
+    this.color,
   }) : super(key: key);
 
   @override
@@ -24,6 +26,7 @@ class EditButton extends StatelessWidget {
           Icon(
             icon,
             size: 30,
+            color: color,
           ),
           Text(title)
         ],

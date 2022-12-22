@@ -20,9 +20,9 @@ final colorsname = {
 };
 
 // Success flutter Toast
-void successToast(context) {
+void successToast(context,String? msg) {
   Fluttertoast.showToast(
       gravity: ToastGravity.CENTER,
       backgroundColor: Colors.green.shade400,
-      msg: "Saved in Gallery Successfully");
+      msg:msg??"Saved in Gallery Successfully");
 }
