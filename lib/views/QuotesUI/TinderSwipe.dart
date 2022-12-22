@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hive_flutter/adapters.dart';
+import 'package:quotes_status_creator/Monetization/AdmobHelper/AdmobHelper.dart';
 import 'package:quotes_status_creator/models/love_quotes_english.dart';
 import 'package:quotes_status_creator/providers/QuotesUINotifier.dart';
 import 'package:quotes_status_creator/providers/ThemeProvider.dart';
@@ -18,12 +19,12 @@ import '../../Controllers/QuotesController.dart';
 import '../../helpers/quote_fnctions.dart';
 import '../../models/HiveModel/hive_quote_data_model.dart';
 import '../../services/store_quotes.dart';
-import '../single_quote_page.dart';
+import 'package:provider/provider.dart' as pr;
 
 class InnerSwiper extends StatefulWidget {
   final String category;
   final List<QuotesModel> quotes;
-  InnerSwiper(this.category, this.quotes);
+  const InnerSwiper(this.category, this.quotes);
   @override
   State<StatefulWidget> createState() {
     return new _InnerSwiperState();
@@ -40,17 +41,19 @@ class _InnerSwiperState extends State<InnerSwiper> {
   int indx = 0;
   Random rand = Random();
   late List<SwiperController> controllers;
+  final AdmobHelper admobHelper = AdmobHelper();
 
   @override
   void initState() {
     controller = new SwiperController();
     screenshotController = ScreenshotController();
-
+    admobHelper.createIntersialad();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    print("Widget tinder is rebuilding");
     return Scaffold(
       // backgroundColor: Colors.white,
       body: Container(
@@ -64,21 +67,28 @@ class _InnerSwiperState extends State<InnerSwiper> {
           children: [
             Expanded(
               flex: 3,
-              child:
-                  Consumer(builder: (BuildContext context, WidgetRef ref, _) {
+              child: Consumer(builder: (context, WidgetRef ref, _) {
                 ref.watch(mainQuotesProvider);
 
                 return Screenshot(
                   controller: screenshotController!,
-                  child: new Swiper(
+                  child: Swiper(
                     onIndexChanged: (value) {
-                      val = value;
-                      indx = value;
+                      ref.read(mainQuotesProvider.notifier).changeindex(value);
+                      indx = ref.watch(mainQuotesProvider.notifier).index;
+                      if (ref.watch(mainQuotesProvider.notifier).adCount ==
+                              4 + Random().nextInt(2) ||
+                          ref.watch(mainQuotesProvider.notifier).adCount > 7) {
+                        print("adts: rand ${Random().nextInt(2)}");
+                        admobHelper.decideIntersialAd(ActionAds.directShow);
+                      }
+                      // val = value;
+                      // indx = value;
                       // rand.nextInt(100);
 
-                      setState(() {});
+                      // setState(() {});
                     },
-                    indicatorLayout: PageIndicatorLayout.SLIDE,
+                    indicatorLayout: PageIndicatorLayout.NONE,
                     loop: true,
                     viewportFraction: 0.8,
                     autoplay: false,
@@ -143,7 +153,7 @@ class _InnerSwiperState extends State<InnerSwiper> {
 }
 
 class _buildButtons extends StatelessWidget {
-  _buildButtons(
+  const _buildButtons(
       {Key? key,
       required this.indx,
       required this.msg,
@@ -162,6 +172,8 @@ class _buildButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final admobHelper = pr.Provider.of<AdmobHelper>(context, listen: false);
+    print("Widget tinder Buttons is rebuilding");
     return Expanded(
       flex: 1,
       child: Row(
@@ -171,7 +183,6 @@ class _buildButtons extends StatelessWidget {
           FloatingActionButton.small(
             heroTag: "c",
             onPressed: () {
-              Fluttertoast.showToast(msg: "$indx");
               Navigator.push(
                   context,
                   PageTransition(
@@ -185,6 +196,7 @@ class _buildButtons extends StatelessWidget {
             return FloatingActionButton.small(
                 heroTag: "d",
                 onPressed: () async {
+                  AdmobHelper().showInterad();
                   // ref.read(mainQuotesProvider.notifier).changeUI(true);
                   saveTextImageToGallery(context, sController);
                   // await Future.delayed(Duration(seconds: 2),
@@ -192,7 +204,7 @@ class _buildButtons extends StatelessWidget {
                   //     .then((value) => ref
                   //         .read(mainQuotesProvider.notifier)
                   //         .changeUI(false));
-
+                  admobHelper.decideIntersialAd(ActionAds.directShow);
                   ref.read(mainQuotesProvider.notifier).changeUI(false);
                 },
                 child: Icon(
@@ -203,6 +215,8 @@ class _buildButtons extends StatelessWidget {
               heroTag: "s",
               onPressed: () {
                 SocialShare.shareOptions(msg);
+                Fluttertoast.showToast(msg: "Share Using...");
+                admobHelper.changeClick();
               },
               child: Icon(
                 Icons.share,
@@ -220,7 +234,7 @@ class StackQuotes extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.watch(quoteProvider);
+    // ref.watch(quotesProvider);
     ref.watch(mainQuotesProvider);
     return // Generated code for this Column Widget...
         Padding(
@@ -299,6 +313,8 @@ class FavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final admobHelper = pr.Provider.of<AdmobHelper>(context, listen: false);
+
     print("rebuilding Favourites");
     return ValueListenableBuilder(
         valueListenable: Hive.box(StoreQuotes().catBoxName()).listenable(),
@@ -321,6 +337,7 @@ class FavButton extends StatelessWidget {
                     quote: quote);
 
                 QuotesController().addCategoryQuotes(quotes);
+                admobHelper.changeClick();
               },
               child: Icon(
                 isExist ? Icons.favorite : Icons.favorite_border_outlined,

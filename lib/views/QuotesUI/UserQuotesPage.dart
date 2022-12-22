@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:quotes_status_creator/Monetization/NativeAds/native_banner.dart';
 import 'package:quotes_status_creator/repositories/Blog/userQuotesRepository.dart';
 import 'package:quotes_status_creator/views/SubmitQuotes/submit.dart';
 import 'package:social_share/social_share.dart';
@@ -48,19 +50,30 @@ final userQuotesProvider =
   return userQuotes;
 });
 
-class UserQuotesBlogPage extends ConsumerWidget {
+class UserQuotesBlogPage extends ConsumerStatefulWidget {
+  final Function(bool) isHideBottomNavBar;
+  UserQuotesBlogPage({
+    required this.isHideBottomNavBar,
+    super.key,
+  });
+
+  @override
+  ConsumerState<UserQuotesBlogPage> createState() => _UserQuotesBlogPageState();
+}
+
+class _UserQuotesBlogPageState extends ConsumerState<UserQuotesBlogPage> {
   bool _handleScrollNotification(notification, WidgetRef ref) {
     if (notification.depth == 0) {
       if (notification is UserScrollNotification) {
         final UserScrollNotification userScroll = notification;
         switch (userScroll.direction) {
           case ScrollDirection.forward:
-            isHideBottomNavBar(true);
+            widget.isHideBottomNavBar(true);
             ref.read(editorNotifier.notifier).setFloatingStatus(true);
 
             break;
           case ScrollDirection.reverse:
-            isHideBottomNavBar(false);
+            widget.isHideBottomNavBar(false);
             ref.read(editorNotifier.notifier).setFloatingStatus(false);
 
             break;
@@ -72,20 +85,29 @@ class UserQuotesBlogPage extends ConsumerWidget {
     return false;
   }
 
-  final Function(bool) isHideBottomNavBar;
-  UserQuotesBlogPage({
-    required this.isHideBottomNavBar,
-    super.key,
-  });
+  late List<Object> dataWithAds;
+  late NativeAd nativeAd;
+
+  void insertAdtoData() {
+    for (var i = dataWithAds.length - 3; i >= 1; i -= 4) {
+      dataWithAds.insert(i, SizedBox.shrink());
+    }
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     ref.watch(mainQuotesProvider);
     final datas = ref.watch(mainQuotesProvider.notifier).userQuotes;
+    dataWithAds = List.from(datas);
+    insertAdtoData();
+
+    // final data = dataWithAds;
     // datas.sort((a, b) => a.featured = 1);
-    datas.sort((a, b) {
-      return a.status.length - b.status.length;
-      return a.status.length - b.status.length;
-    });
+    // datas.sort((a, b) {
+    //   if
+    //   return a.status.length - b.status.length;
+    //   return a.status.length - b.status.length;
+    // });
     return NotificationListener<ScrollNotification>(
       onNotification: ((notification) =>
           _handleScrollNotification(notification, ref)),
@@ -93,10 +115,13 @@ class UserQuotesBlogPage extends ConsumerWidget {
           body: ListView.builder(
               scrollDirection: Axis.vertical,
               shrinkWrap: false,
-              itemCount: datas.length,
+              itemCount: dataWithAds.length,
               addAutomaticKeepAlives: true,
               itemBuilder: (context, int i) {
-                // Generated code for this Container Widget...
+                final item = dataWithAds[i];
+                if (item is Widget) {
+                  return const NativeBanner();
+                }
                 return Padding(
                     padding: const EdgeInsets.fromLTRB(20, 13, 25, 8),
                     child: Container(
@@ -146,7 +171,7 @@ class UserQuotesBlogPage extends ConsumerWidget {
                         // ),
                         child: Stack(children: [
                           Banner(
-                              message: "@${datas[i].userid}",
+                              message: "@{datas[i].userid}",
                               textStyle: TextStyle(
                                   fontSize: 10,
                                   color: Theme.of(context)
@@ -159,7 +184,7 @@ class UserQuotesBlogPage extends ConsumerWidget {
                               child: GestureDetector(
                                 onTap: () {
                                   AppUtil.lauchInstagram(
-                                      'https://www.instagram.com/@${datas[i].userid}');
+                                      'https://www.instagram.com/@{datas[i].userid}');
                                 },
                               )),
                           Padding(
@@ -168,7 +193,7 @@ class UserQuotesBlogPage extends ConsumerWidget {
                                       MediaQuery.of(context).size.width * 0.79),
                               child: Align(
                                 alignment: Alignment.topRight,
-                                child: buttons(context, datas[i].quote),
+                                child: buttons(context, "datas[i].quote"),
                               )),
                           Column(
                             children: [
@@ -215,6 +240,11 @@ class UserQuotesBlogPage extends ConsumerWidget {
                             ],
                           )
                         ])));
+
+                //  AdWidget(ad: item.load() as BannerAd
+                // Generated code for this Container Widget...
+
+                return SizedBox.shrink();
               }),
           floatingActionButton: Visibility(
               visible: ref.watch(editorNotifier.notifier).showFloatingButton,

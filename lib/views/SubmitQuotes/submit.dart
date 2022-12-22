@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_email_sender/flutter_email_sender.dart';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:quotes_status_creator/Monetization/NativeAds/native_banner.dart';
 
 class SubmitQuotesPage extends StatefulWidget {
   final String title;
@@ -23,13 +24,14 @@ class _SubmitQuotesPageState extends State<SubmitQuotesPage> {
   );
 
   Future<void> send() async {
+    String platformResponse;
+
     final Email email = Email(
       body: _bodyController.text,
       subject: _subjectController.text,
       recipients: ['aoneapps1+userQuotes@gmail.com'],
     );
-
-    String platformResponse;
+    if (!mounted) return;
 
     try {
       await FlutterEmailSender.send(email);
@@ -46,18 +48,6 @@ class _SubmitQuotesPageState extends State<SubmitQuotesPage> {
     } catch (error) {
       platformResponse = error.toString();
     }
-
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: Colors.green,
-        content: Text(
-          "Successfully Sent",
-          textAlign: TextAlign.center,
-        ),
-      ),
-    );
   }
 
   @override
@@ -78,14 +68,19 @@ class _SubmitQuotesPageState extends State<SubmitQuotesPage> {
       ),
       body: Column(
         children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0, bottom: 4),
+            child: const NativeBanner(),
+          ),
           SizedBox(
             height: 8,
           ),
-          Expanded(
+          Flexible(
             flex: 1,
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: TextField(
+                textInputAction: TextInputAction.next,
                 controller: _subjectController,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
@@ -102,6 +97,7 @@ class _SubmitQuotesPageState extends State<SubmitQuotesPage> {
                 controller: _bodyController,
                 maxLines: null,
                 expands: true,
+                textInputAction: TextInputAction.done,
                 textAlignVertical: TextAlignVertical.center,
                 decoration: const InputDecoration(
                     hintText: 'Your Quotes Here',
@@ -127,7 +123,6 @@ class _SubmitQuotesPageState extends State<SubmitQuotesPage> {
         child: const Icon(FontAwesomeIcons.paperPlane),
         onPressed: send,
       ),
-      bottomNavigationBar: const BottomAppBar(child: Text("Hello Ads")),
     );
   }
 }

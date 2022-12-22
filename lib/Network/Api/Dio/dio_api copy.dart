@@ -1,5 +1,7 @@
 // To handle offline API caching in Dio in Flutter, you can use the dio-http-cache package to automatically store and retrieve responses from the cache when the device is offline. Here is an example of how you might use the dio-http-cache package to enable offline caching in a Flutter app:
 
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:dio_http_cache/dio_http_cache.dart';
 import 'package:quotes_status_creator/Network/Exceptions.dart';
@@ -24,16 +26,16 @@ class QuoteAPI {
   }
 
   Future<PostModel> getQuotes(url) async {
+ 
     print("dio called");
     try {
       final response = await _dio.get(
         url,
-        options: buildCacheOptions(
-          Duration(hours: 18),
-          forceRefresh: true
-        ),
+        options: buildCacheOptions(Duration(hours: 18),
+            forceRefresh: true, options: Options(receiveTimeout: 500)),
       );
-      // print(response.data.toString());
+      print(response.data.toString());
+
 
       if (response.statusCode == 200) {
         quoteHiveController.storeData(response.toString());
@@ -52,9 +54,9 @@ class QuoteAPI {
       //   print("socket exception $e");
       //   throw NoInternetException("No Internet from dio");
     } catch (error) {
-      print("Catech diao Erroe:$error");
+      print(error);
       var response;
-      throw NoInternetException("No Internet from dio");
+      throw response.statusCode;
     }
   }
 

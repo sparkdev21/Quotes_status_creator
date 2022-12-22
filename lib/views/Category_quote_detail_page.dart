@@ -1,6 +1,10 @@
 import 'dart:core';
 
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:quotes_status_creator/Monetization/AdmobHelper/AdmobHelper.dart';
+import 'package:quotes_status_creator/Monetization/Banners/small_banner.dart';
+import 'package:quotes_status_creator/Monetization/NativeAds/native_banner.dart';
 import 'package:quotes_status_creator/providers/QuotesUINotifier.dart';
 import 'package:quotes_status_creator/providers/ThemeProvider.dart';
 import 'package:quotes_status_creator/views/Editor/SingleEditor.dart';
@@ -17,37 +21,60 @@ import 'package:hive_flutter/adapters.dart';
 import '../services/store_quotes.dart';
 import 'QuotesUI/ElevatedQuotesCard.dart';
 import 'widgets/Favourite_categories.dart.dart';
+import 'package:provider/provider.dart' as pr;
 
 enum CategoryUI { Tinder, List }
 
-class CategoryQuoteDetailPage extends ConsumerWidget {
+class CategoryQuoteDetailPage extends ConsumerStatefulWidget {
   final int index;
   final String typeofQuote;
   final List<QuotesModel> quoteList;
   CategoryQuoteDetailPage(this.index, this.typeofQuote, this.quoteList);
 
+  @override
+  ConsumerState<CategoryQuoteDetailPage> createState() =>
+      _CategoryQuoteDetailPageState();
+}
+
+class _CategoryQuoteDetailPageState
+    extends ConsumerState<CategoryQuoteDetailPage> {
   final QuotesController controller = QuotesController();
+
   final _scrollController = ScrollController();
+
   bool defaultCategory = true;
+
   bool defaultColor = true;
+  late List quotesWithAds;
+  @override
+  void initState() {
+    quotesWithAds = List.from(widget.quoteList[0].content!.toList());
+    // print("GB2:${quotesWithAds.first.toString()}");
+    insertAdtoList();
+    super.initState();
+  }
+
+  void insertAdtoList() {
+    for (var i = quotesWithAds.length - 3; i >= 0; i -= 4) {
+      quotesWithAds.insert(i, SizedBox.shrink());
+    }
+  }
 
   //Function for Fetching Posts
-
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
+    print("GB2:${quotesWithAds.length.toString()}");
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive,
         overlays: [SystemUiOverlay.bottom]);
     ref.watch(mainQuotesProvider);
     ref.watch(themeProvider);
+    final admobHelper = pr.Provider.of<AdmobHelper>(context, listen: false);
     // quoteList.shuffle();;
     print("Rebuilding widget main");
-    print(quoteList.first);
+    print(widget.quoteList.first);
+
     return Scaffold(
-      bottomNavigationBar: BottomAppBar(
-          child: Container(
-        height: 50,
-        child: Text("ads"),
-      )),
+      bottomNavigationBar: BannerSmall(),
       appBar: AppBar(
           leading: IconButton(
             icon: Icon(Icons.arrow_back_ios_new),
@@ -55,7 +82,7 @@ class CategoryQuoteDetailPage extends ConsumerWidget {
           ),
           centerTitle: true,
           title: Text(
-            typeofQuote,
+            widget.typeofQuote,
             textAlign: TextAlign.center,
           ),
           actions: [
@@ -139,6 +166,8 @@ class CategoryQuoteDetailPage extends ConsumerWidget {
                     //     builder: (context) => AboutdialogWidget());
                     // print("My account menu is selected.");
                   } else if (value == 1) {
+                    admobHelper.decideIntersialAd(ActionAds.twoClicks);
+
                     defaultCategory = !defaultCategory;
 
                     ref
@@ -146,15 +175,19 @@ class CategoryQuoteDetailPage extends ConsumerWidget {
                         .changeUi(defaultCategory);
                     print("Settings menu is selected.");
                   } else if (value == 2) {
+                    admobHelper.decideIntersialAd(ActionAds.twoClicks);
+
                     Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => FavouriteCategoryPage(
-                            category: typeofQuote,
+                            category: widget.typeofQuote,
                           ),
                         ));
                     print("Logout menu is selected.");
                   } else if (value == 3) {
+                    admobHelper.decideIntersialAd(ActionAds.twoClicks);
+
                     defaultColor = !defaultColor;
                     ref
                         .read(mainQuotesProvider.notifier)
@@ -177,49 +210,69 @@ class CategoryQuoteDetailPage extends ConsumerWidget {
             // ),
           ]),
       body: ref.watch(mainQuotesProvider.notifier).defaultCategory
-          ? InnerSwiper(typeofQuote, quoteList)
+          ? InnerSwiper(widget.typeofQuote, widget.quoteList)
           : Stack(alignment: Alignment.bottomRight, children: [
               ListView.builder(
                 padding: const EdgeInsets.only(top: 4),
-                itemCount: quoteList[0].content!.length,
+                // itemCount: widget.quoteList[0].content!.length,
+                itemCount: quotesWithAds.length,
                 itemBuilder: (context, i) {
+                  final item = quotesWithAds[i];
+                  if (item is Widget) {
+                    return Container(child: const NativeBanner()
+                        // ,i.isOdd
+                        //     ? DynamicBanner(adsize: AdSize.largeBanner)
+                        //     :
+                        );
+                  }
                   return Padding(
                     padding: const EdgeInsets.all(12.0),
                     child: Column(
                       children: [
                         ElevatedQuotesCard(
-                            quote: quoteList[0].content![i].msg,
-                            category: typeofQuote,
+                            quote: widget.quoteList[0].content![i].msg,
+                            category: widget.typeofQuote,
                             // notifier: quoteList[0].content![i].msg,
 
                             copyCallback: () {
+                              admobHelper
+                                  .decideIntersialAd(ActionAds.counterShow);
                               SocialShare.copyToClipboard(
-                                  quoteList[0].content![i].msg);
-                              SnackBar snackBar = SnackBar(
-                                content: Text(
-                                  "Copied to Clipboard",
-                                  textAlign: TextAlign.center,
-                                ),
-                              );
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(snackBar);
+                                  widget.quoteList[0].content![i].msg);
+                              Fluttertoast.showToast(
+                                  msg: "copied to clipboard");
+                              // SnackBar snackBar = SnackBar(
+                              //   content: Text(
+                              //     "Copied to Clipboard",
+                              //     textAlign: TextAlign.center,
+                              //   ),
+                              // );
+                              // ScaffoldMessenger.of(context)
+                              //     .showSnackBar(snackBar);
                             },
                             editCallback: () {
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => SimpleEditorPage(
-                                      title: typeofQuote,
-                                      quote: quoteList[0].content![i].msg,
+                                      title: widget.typeofQuote,
+                                      quote:
+                                          widget.quoteList[0].content![i].msg,
                                     ),
                                   ));
                             },
-                            favoriteCallback: () {},
-                            shareCallback: () {
-                              SocialShare.shareOptions(
-                                  quoteList[0].content![i].msg);
+                            favoriteCallback: () {
+                              print("fb callback");
                             },
-                            textClickcallBack: () {}),
+                            shareCallback: () {
+                              Fluttertoast.showToast(msg: "Share Using");
+                              SocialShare.shareOptions(
+                                  widget.quoteList[0].content![i].msg);
+                            },
+                            textClickcallBack: () {
+                              admobHelper
+                                  .decideIntersialAd(ActionAds.counterShow);
+                            }),
                       ],
                     ),
                   );
@@ -231,18 +284,19 @@ class CategoryQuoteDetailPage extends ConsumerWidget {
 }
 
 class FavouriteButton extends StatelessWidget {
-  const FavouriteButton(
-      {Key? key,
-      required this.index,
-      required this.quote,
-      required this.category})
-      : super(key: key);
+  const FavouriteButton({
+    Key? key,
+    required this.index,
+    required this.quote,
+    required this.category,
+  }) : super(key: key);
   final String quote;
   final String category;
   final int index;
 
   @override
   Widget build(BuildContext context) {
+    final admobhelper = pr.Provider.of<AdmobHelper>(context, listen: false);
     print("rebuilding Favourites");
     return ValueListenableBuilder(
         valueListenable: Hive.box(StoreQuotes().catBoxName()).listenable(),
@@ -252,29 +306,26 @@ class FavouriteButton extends StatelessWidget {
           bool isExist =
               QuotesController().favCatKeys().toList().contains(quote) &&
                   isCatexist;
-          return Column(
-            children: [
-              IconButton(
-                  onPressed: () {
-                    HiveQuoteDataModel quotes = HiveQuoteDataModel(
-                        category: category,
-                        id: index,
-                        isFavourite: true,
-                        language: category.contains(RegExp(r'hindi|Hindi'))
-                            ? 'hindi'
-                            : 'english',
-                        quote: quote);
+          return IconButton(
+              onPressed: () {
+                HiveQuoteDataModel quotes = HiveQuoteDataModel(
+                    category: category,
+                    id: index,
+                    isFavourite: true,
+                    language: category.contains(RegExp(r'hindi|Hindi'))
+                        ? 'hindi'
+                        : 'english',
+                    quote: quote);
 
-                    QuotesController().addCategoryQuotes(quotes);
-                  },
-                  icon: Icon(
-                    isExist ? Icons.favorite : Icons.favorite_border_outlined,
-                    color: isExist
-                        ? Theme.of(context).colorScheme.tertiary
-                        : Theme.of(context).colorScheme.secondary,
-                  )),
-            ],
-          );
+                QuotesController().addCategoryQuotes(quotes);
+                admobhelper.decideIntersialAd(ActionAds.twoClicks);
+              },
+              icon: Icon(
+                isExist ? Icons.favorite : Icons.favorite_border_outlined,
+                color: isExist
+                    ? Theme.of(context).colorScheme.tertiary
+                    : Theme.of(context).colorScheme.secondary,
+              ));
         });
   }
 }

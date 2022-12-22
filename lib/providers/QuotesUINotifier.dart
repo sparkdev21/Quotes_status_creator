@@ -12,6 +12,27 @@ final mainQuotesProvider = ChangeNotifierProvider<QuotesUINotifier>((ref) {
 });
 
 class QuotesUINotifier extends ChangeNotifier {
+//rapid index change notifier in Tinder Swipe
+  int _indx = 0;
+  int _show_after_action = 5;
+  int _adsCounter = 0;
+  // set adsCounter(value) {
+  //   adsCounter = value;
+  // }
+
+  int get adCount => _adsCounter;
+  get index => _indx;
+  changeindex(value) {
+    _adsCounter += 1;
+    _indx = value;
+    if (_adsCounter == _show_after_action || _adsCounter > 8) {
+      print("adts:$_adsCounter");
+      _adsCounter = 0;
+    }
+
+    notifyListeners();
+  }
+
   List<TrendingQuotesModel> _featuredQuotes = [
     TrendingQuotesModel(
       id: 1,
@@ -54,27 +75,11 @@ class QuotesUINotifier extends ChangeNotifier {
   ];
   List<UserQuotesBlogModel> _userQuotes = [
     UserQuotesBlogModel(
-      userid: "@gb",
-      quote: "Hello",
-      featured: 1,
-      status: "pending"
-    
-    ),
+        userid: "@gb", quote: "Hello", featured: 1, status: "pending"),
     UserQuotesBlogModel(
-      userid: "@gb",
-      quote: "Hello",
-      featured: 1,
-      status: "pending"
-    
-    ),
+        userid: "@gb", quote: "Hello", featured: 1, status: "pending"),
     UserQuotesBlogModel(
-      userid: "@gb",
-      quote: "Hello",
-      featured: 1,
-      status: "pending"
-    
-    ),
-   
+        userid: "@gb", quote: "Hello", featured: 1, status: "pending"),
   ];
 
   List<List<QuotesModel>> _mainQuotes = [];
@@ -93,6 +98,7 @@ class QuotesUINotifier extends ChangeNotifier {
     _trendingQuotes = value;
     notifyListeners();
   }
+
 // User Quotes
   List<UserQuotesBlogModel> get userQuotes => _userQuotes;
   setUserQuotes(value) {

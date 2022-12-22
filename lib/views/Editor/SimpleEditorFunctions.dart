@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:gradient_colors/gradient_colors.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
@@ -11,10 +12,11 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:screenshot/screenshot.dart';
 
+import '../../Monetization/AdHelpers.dart';
 import 'FlutterUtils.dart';
 import 'SingleEditor.dart';
 
-class ColorChanger extends ChangeNotifier{
+class ColorChanger extends ChangeNotifier {
   final List<Color> textColors = [
     Colors.black,
     Colors.white,
@@ -45,41 +47,42 @@ class ColorChanger extends ChangeNotifier{
     Colors.yellow
   ];
   int textColorLooperIndex = 0;
-  double _textSize =24.0;
+  double _textSize = 24.0;
 
-  List<Color> get paletteColors=>paletteColors;
+  List<Color> get paletteColors => paletteColors;
 
-  double get textSize=>_textSize;
+  double get textSize => _textSize;
   setTextSize(double value) {
     _textSize = value;
     notifyListeners();
   }
 
   Color initialTextColor = Colors.black;
-   genTextlooper() {
+  genTextlooper() {
     if (textColorLooperIndex == textColors.length - 1) {
       textColorLooperIndex = 0;
     } else {
       textColorLooperIndex++;
-
-
     }
-  notifyListeners();
+    notifyListeners();
     return textColorLooperIndex;
   }
+
   setTextColor(Color value) {
     initialTextColor = value;
     notifyListeners();
   }
 }
- final colorChanger =ChangeNotifierProvider<ColorChanger>((ref) {
+
+final colorChanger = ChangeNotifierProvider<ColorChanger>((ref) {
   return ColorChanger();
 });
+
 class TextColourChanger extends ConsumerWidget {
   const TextColourChanger({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context,WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SizedBox(
       height: 50,
       child: ListView.builder(
@@ -87,17 +90,24 @@ class TextColourChanger extends ConsumerWidget {
           itemCount: ref.read(colorChanger.notifier).paletteColors.length,
           itemBuilder: (BuildContext context, i) => GestureDetector(
               onTap: () {
-                final pc=ref.read(colorChanger.notifier).paletteColors;
+                final pc = ref.read(colorChanger.notifier).paletteColors;
                 ref.read(colorChanger.notifier).setTextColor(pc[i]);
               },
-              child:
-              Container(height: 50, width: 50, color: ref.watch(colorChanger.notifier).paletteColors[i]))),
+              child: Container(
+                  height: 50,
+                  width: 50,
+                  color: ref.watch(colorChanger.notifier).paletteColors[i]))),
     );
   }
 }
 
+abstract class SimpleEditorModel extends ConsumerState<SimpleEditorPage> {
+  @override
+  void didChangeDependencies() {
+    createInterstitialAd();
+    super.didChangeDependencies();
+  }
 
-abstract class SimpleEditorModel extends State<SimpleEditorPage> {
   final List<Color> textColors = [
     Colors.black,
     Colors.white,
@@ -300,17 +310,15 @@ abstract class SimpleEditorModel extends State<SimpleEditorPage> {
     showDialog(
         context: context,
         barrierColor: Colors.white30,
-        builder: (BuildContext context) => Consumer(
-          builder: (context,ref,_) {
-            return Container();
-          //   FontSizeSlider(
-          //       //   initialFontSize: ref.watch(colorChanger.notifier).textSize,
-          //       //   valueChanged: (value) {
-          //       //     ref.read(colorChanger.notifier).setTextSize(value);
-          //       //   },
-          //       // );
-          }));
-
+        builder: (BuildContext context) => Consumer(builder: (context, ref, _) {
+              return Container();
+              //   FontSizeSlider(
+              //       //   initialFontSize: ref.watch(colorChanger.notifier).textSize,
+              //       //   valueChanged: (value) {
+              //       //     ref.read(colorChanger.notifier).setTextSize(value);
+              //       //   },
+              //       // );
+            }));
   }
 
   int textColorLooperIndex = 0;
@@ -352,6 +360,7 @@ abstract class SimpleEditorModel extends State<SimpleEditorPage> {
   bool isInterstitialAdReady = false;
 
 //Ads Counters
+  InterstitialAd? interstitialAd;
   int fontChangeCountAds = 0;
   int gradientChnageCountAds = 0;
   int imagechangeCounterAds = 0;
@@ -361,72 +370,72 @@ abstract class SimpleEditorModel extends State<SimpleEditorPage> {
 
   TextEditingController textEditingController = TextEditingController();
   void createInterstitialAd() {
-    // InterstitialAd.load(
-    //     adUnitId: AdHelper.interstitialImageOnlyAdId,
-    //     request: const AdRequest(),
-    //     adLoadCallback: InterstitialAdLoadCallback(
-    //       onAdLoaded: (InterstitialAd ad) {
-    //         debugPrint('$ad loaded');
-    //         interstitialAd = ad;
-    //         _numInterstitialLoadAttempts = 0;
-    //         // _interstitialAd!.setImmersiveMode(true);
-    //       },
-    //       onAdFailedToLoad: (LoadAdError error) {
-    //         debugPrint('InterstitialAd failed to load: $error.');
-    //         _numInterstitialLoadAttempts += 1;
-    //         interstitialAd = null;
-    //         if (_numInterstitialLoadAttempts < maxFailedLoadAttempts) {
-    //           createInterstitialAd();
-    //         }
-    //       },
-    //     ));
+    InterstitialAd.load(
+        adUnitId: AdHelper.interstitialGoogleTestAdUnitId,
+        request: const AdRequest(),
+        adLoadCallback: InterstitialAdLoadCallback(
+          onAdLoaded: (InterstitialAd ad) {
+            debugPrint('$ad loaded');
+            interstitialAd = ad;
+            _numInterstitialLoadAttempts = 0;
+            // _interstitialAd!.setImmersiveMode(true);
+          },
+          onAdFailedToLoad: (LoadAdError error) {
+            debugPrint('InterstitialAd failed to load: $error.');
+            _numInterstitialLoadAttempts += 1;
+            interstitialAd = null;
+            if (_numInterstitialLoadAttempts < maxFailedLoadAttempts) {
+              createInterstitialAd();
+            }
+          },
+        ));
   }
 
   void showInterstitialAd() {
-    // if (interstitialAd == null) {
-    //   debugPrint('Warning: attempt to show interstitial before loaded.');
-    //   return;
-    // }
-    // interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
-    //   onAdShowedFullScreenContent: (InterstitialAd ad) =>
-    //       debugPrint('ad onAdShowedFullScreenContent.'),
-    //   onAdDismissedFullScreenContent: (InterstitialAd ad) {
-    //     debugPrint('$ad onAdDismissedFullScreenContent.');
-    //     ad.dispose();
-    //     createInterstitialAd();
-    //   },
-    //   onAdFailedToShowFullScreenContent: (InterstitialAd ad, AdError error) {
-    //     debugPrint('$ad onAdFailedToShowFullScreenContent: $error');
-    //     ad.dispose();
-    //     createInterstitialAd();
-    //   },
-    // );
-    // interstitialAd!.show();
-    // interstitialAd = null;
+    if (interstitialAd == null) {
+      debugPrint('Warning: attempt to show interstitial before loaded.');
+      return;
+    }
+    interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+      onAdShowedFullScreenContent: (InterstitialAd ad) =>
+          debugPrint('ad onAdShowedFullScreenContent.'),
+      onAdDismissedFullScreenContent: (InterstitialAd ad) {
+        debugPrint('$ad onAdDismissedFullScreenContent.');
+        ad.dispose();
+        createInterstitialAd();
+      },
+      onAdFailedToShowFullScreenContent: (InterstitialAd ad, AdError error) {
+        debugPrint('$ad onAdFailedToShowFullScreenContent: $error');
+        ad.dispose();
+        createInterstitialAd();
+      },
+    );
+    interstitialAd!.show();
+    interstitialAd = null;
   }
 
   void showExitInterstitialAd() {
-    // if (interstitialAd == null) {
-    //   debugPrint('Warning: attempt to show interstitial before loaded.');
-    //   Navigator.pop(context);
-    //   return;
-    // }
-    // interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
-    //   onAdShowedFullScreenContent: (InterstitialAd ad) =>
-    //       debugPrint('ad onAdShowedFullScreenContent.'),
-    //   onAdDismissedFullScreenContent: (InterstitialAd ad) {
-    //     debugPrint('$ad onAdDismissedFullScreenContent.');
-    //     ad.dispose();
-    //     Navigator.pop(context);
-    //   },
-    //   onAdFailedToShowFullScreenContent: (InterstitialAd ad, AdError error) {
-    //     debugPrint('$ad onAdFailedToShowFullScreenContent: $error');
-    //     ad.dispose();
-    //     createInterstitialAd();
-    //   },
-    // );
-    // interstitialAd!.show();
-    // interstitialAd = null;
+    if (interstitialAd == null) {
+      debugPrint('Warning: attempt to show interstitial before loaded.');
+      Navigator.pop(context);
+      return;
+    }
+    interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+      onAdShowedFullScreenContent: (InterstitialAd ad) =>
+          debugPrint('ad onAdShowedFullScreenContent.'),
+      onAdDismissedFullScreenContent: (InterstitialAd ad) {
+        debugPrint('$ad onAdDismissedFullScreenContent.');
+        ad.dispose();
+        Navigator.pop(context);
+      },
+      onAdFailedToShowFullScreenContent: (InterstitialAd ad, AdError error) {
+        debugPrint('$ad onAdFailedToShowFullScreenContent: $error');
+        ad.dispose();
+        createInterstitialAd();
+      },
+    );
+    interstitialAd!.show();
+    interstitialAd = null;
   }
 
   //Ads Counter for displaying ads

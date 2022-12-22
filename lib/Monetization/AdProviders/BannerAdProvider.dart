@@ -1,24 +1,39 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../AdHelpers.dart';
 
-class BannerSmall extends StatefulWidget {
-  const BannerSmall({Key? key}) : super(key: key);
+final bannerAdP = Provider.autoDispose((ref) => BannerProvider());
+
+final bannerWidget = Provider.autoDispose<Widget>((ref) {
+  final ad = ref.watch(bannerAdP);
+  ref.onDispose(() {
+    debugPrint("Banner provider Disposed 2");
+  });
+  return ad.getBannerAd();
+});
+
+class BannerProviderStateful extends StatefulWidget {
+  const BannerProviderStateful({super.key});
 
   @override
-  State<StatefulWidget> createState() {
-    return _BannerSmallState();
-  }
+  State<BannerProviderStateful> createState() => _BannerProviderStatefulState();
 }
 
-class _BannerSmallState extends State<BannerSmall> {
+class _BannerProviderStatefulState extends State<BannerProviderStateful> {
   late BannerAd _bannerAd;
   bool _bannerReady = false;
 
   @override
-  void didChangeDependencies() {
+  void dispose() {
+    _bannerAd.dispose();
+    debugPrint("Adbanner Admob Widget is Disposed");
+    super.dispose();
+  }
+
+  @override
+  void initState() {
     _bannerAd = BannerAd(
       adUnitId: AdHelper.bannerGoogleAdmobOnlyAdUnitId,
       request: const AdRequest(),
@@ -43,28 +58,20 @@ class _BannerSmallState extends State<BannerSmall> {
       ),
     );
     _bannerAd.load();
-
-    super.didChangeDependencies();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    debugPrint("Adbanner Widget is Disposed:SatefulBanner");
-    Fluttertoast.showToast(msg: "disposed SatefulBanner");
-    _bannerAd.dispose();
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    debugPrint("Adbanner Widget is building:SMBANNER2");
+    return SizedBox(
+      height: 50,
+      child: AdWidget(ad: _bannerAd),
+    );
+  }
+}
 
-    return _bannerReady
-        ? SizedBox(
-            width: _bannerAd.size.width.toDouble(),
-            height: _bannerAd.size.height.toDouble(),
-            child: AdWidget(ad: _bannerAd),
-          )
-        : const SizedBox.shrink();
+class BannerProvider {
+  getBannerAd() {
+    return BannerProviderStateful();
   }
 }

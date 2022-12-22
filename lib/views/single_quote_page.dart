@@ -5,44 +5,44 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../repositories/Quotes/quote_repository.dart';
 
-final quoteRepositoryProvider = Provider((ref) => QuotesRepository());
-final quoteProvider = FutureProvider<List<QuotesModel>?>((ref) {
-  // access the provider above
-  final repository = ref.watch(quoteRepositoryProvider);
-  final index = ref.watch(indexProvider);
-  // use it to return a Futured
-  return repository.fetchQuotes(index);
-});
-final indexProvider = StateProvider((ref) => 0);
+// final quoteRepositoryProvider = Provider((ref) => QuotesRepository());
+// final quoteProvider = FutureProvider<List<QuotesModel>?>((ref) {
+//   // access the provider above
+//   final repository = ref.watch(quoteRepositoryProvider);
+//   final index = ref.watch(indexProvider);
+//   // use it to return a Futured
+//   return repository.fetchQuotes(index);
+// });
+// final indexProvider = StateProvider((ref) => 0);
 
-class SingleQuotePAge extends ConsumerWidget {
-  final double _borderRadius = 24;
-  final int index;
-  final String author;
+// class SingleQuotePAge extends ConsumerWidget {
+//   final double _borderRadius = 24;
+//   final int index;
+//   final String author;
 
-  SingleQuotePAge(this.index, this.author);
+//   SingleQuotePAge(this.index, this.author);
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    AsyncValue<List<QuotesModel>?> quotes = ref.watch(quoteProvider);
-    return Scaffold(
-        appBar: AppBar(
-          title: Text('Gradient Cards'),
-        ),
-        body: quotes.when(
-            loading: () => Center(child: const CircularProgressIndicator()),
-            error: (error, stack) => const Text('Oops'),
-            data: (quotes) => ListView.builder(
-                itemCount: quotes!.length,
-                itemBuilder: (context, index) {
-                  return Center(
-                    child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Text(quotes[index].content![0].msg)),
-                  );
-                })));
-  }
-}
+//   @override
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     AsyncValue<List<QuotesModel>?> quotes = ref.watch(quoteProvider);
+//     return Scaffold(
+//         appBar: AppBar(
+//           title: Text('Gradient Cards'),
+//         ),
+//         body: quotes.when(
+//             loading: () => Center(child: const CircularProgressIndicator()),
+//             error: (error, stack) => const Text('Oops'),
+//             data: (quotes) => ListView.builder(
+//                 itemCount: quotes!.length,
+//                 itemBuilder: (context, index) {
+//                   return Center(
+//                     child: Padding(
+//                         padding: const EdgeInsets.all(16.0),
+//                         child: Text(quotes[index].content![0].msg)),
+//                   );
+//                 })));
+//   }
+// }
 
 class PlaceInfo {
   final String name;

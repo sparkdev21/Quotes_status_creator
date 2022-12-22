@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:auto_size_text/auto_size_text.dart';
+import '../../Monetization/Banners/small_banner.dart';
 import '/views/Editor/EditorNotifier.dart';
 import '/views/Editor/Messenger.dart';
 import 'package:flutter/material.dart';
@@ -25,7 +26,7 @@ class SimpleEditorPage extends ConsumerStatefulWidget {
   final String title;
   final String quote;
 
-  SimpleEditorPage({super.key, required this.title, required this.quote});
+  const SimpleEditorPage({super.key, required this.title, required this.quote});
 
   @override
   ConsumerState<SimpleEditorPage> createState() => _SimpleEditorPageState();
@@ -37,10 +38,11 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
   final ScreenshotController screenshotController = ScreenshotController();
 
   final TextEditingController _nameController = TextEditingController();
-  String? mainQuote;
+  late String mainQuote;
   @override
   void initState() {
     mainQuote = widget.quote;
+    ref.read(editorNotifier.notifier).createInterstitialAd();
     super.initState();
   }
 
@@ -202,8 +204,54 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
             ));
   }
 
+  // showEditText(context, WidgetRef ref) {
+  //   setState(() {
+  //     _nameController.text = mainQuote;
+  //   });
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) => AlertDialog(
+  //       title: const Text(
+  //         'Edit Text',
+  //       ),
+  //       content: TextField(
+  //         scrollPadding: const EdgeInsets.all(8),
+  //         textAlign: TextAlign.center,
+  //         controller: _nameController,
+  //         maxLines: 20,
+  //         minLines: 1,
+  //         decoration: InputDecoration(
+  //           suffixIcon: const Icon(
+  //             Icons.edit,
+  //           ),
+  //           filled: true,
+  //           hintText: "YouR tExt Here",
+  //         ),
+  //       ),
+  //       actions: <Widget>[
+  //         TextButton(
+  //           onPressed: () {
+  //             Navigator.of(context).pop();
+  //           },
+  //           child: const Text('Cancel'),
+  //         ),
+  //         TextButton(
+  //             onPressed: () {
+  //               setState(() {
+  //                 mainQuote = _nameController.text;
+  //                 Navigator.pop(context);
+  //               });
+  //             },
+  //             child: const Text("Add"))
+  //       ],
+  //     ),
+  //   );
+  // }
+
   showEditText(context, WidgetRef ref) {
-    _nameController.text = widget.quote;
+    setState(() {
+      _nameController.text = mainQuote;
+    });
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -211,41 +259,35 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
             actionsPadding: EdgeInsets.all(16),
             actionsAlignment: MainAxisAlignment.center,
             actions: [
-              TextButton(
+              ElevatedButton(
                   onPressed: () {
+                    ref.read(editorNotifier.notifier).showInterstitialAd();
                     Navigator.pop(context);
                   },
-                  child: Icon(Icons.done))
+                  child: Text("Apply"))
             ],
             contentPadding: EdgeInsets.all(8),
-            content: SizedBox(
-              height: MediaQuery.of(context).size.height * 0.3,
+            content: Flexible(
               child: TextField(
                 showCursor: true,
                 textAlign: TextAlign.center,
                 textInputAction: TextInputAction.go,
                 controller: _nameController,
-
-                maxLines: null,
-                minLines: null,
-                expands: true,
-                textDirection: TextDirection.ltr,
+                maxLines: 15,
+                minLines: 1,
                 onChanged: ((value) {
                   mainQuote = value;
-                  _nameController.text = value;
+
                   setState(() {});
-                  _nameController.selection = TextSelection.fromPosition(
-                      TextPosition(offset: _nameController.text.length));
                 }),
                 onSubmitted: ((value) {
                   mainQuote = value;
                   _nameController.text = value;
+
                   setState(() {});
-                  _nameController.selection = TextSelection.fromPosition(
-                      TextPosition(offset: _nameController.text.length));
+
                   Navigator.pop(context);
                 }),
-
                 decoration: InputDecoration(
                   suffixIcon: InkWell(
                     onTap: () => _nameController.text = '',
@@ -255,62 +297,9 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
                   ),
                   hintText: 'Your Text Here..',
                 ),
-
-                //  TextField(
-                //   showCursor: true,
-                //   textInputAction: TextInputAction.go,
-                //   controller: _nameController,
-                //   style: TextStyle(color: Colors.black),
-                //   onChanged: ((value) {
-                //     quote = value;
-                //     _nameController.text = value;
-                //   }),
-                // ),
               ),
             ),
           );
-          // showModalBottomSheet(
-          //     isScrollControlled: true,
-          //     context: context,
-          //     builder: (BuildContext ctx) {
-          //       return Padding(
-          //         padding: EdgeInsets.only(
-          //             top: 20,
-          //             left: 20,
-          //             right: 20,
-          //             // prevent the soft keyboard from covering text fields
-          //             bottom: MediaQuery.of(ctx).viewInsets.bottom + 20),
-          //         child: Column(
-          //           mainAxisSize: MainAxisSize.min,
-          //           crossAxisAlignment: CrossAxisAlignment.start,
-          //           children: [
-          //             TextField(
-          //               controller: _nameController,
-          //               decoration: const InputDecoration(labelText: 'Username'),
-          //             ),
-          //             const SizedBox(
-          //               height: 20,
-          //             ),
-          //             ElevatedButton(
-          //               child: Text("UpDate"),
-          //               onPressed: () async {
-          //                 final String? name = _nameController.text;
-
-          //                 if (name != null) {
-          //                   quote = name;
-
-          //                   // Clear the text fields
-          //                   _nameController.text = '';
-
-          //                   // Hide the bottom sheet
-          //                   Navigator.of(context).pop();
-          //                 }
-          //               },
-          //             )
-          //           ],
-          //         ),
-          //       );
-          //     });
         });
   }
 
@@ -444,7 +433,10 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
                             (value) => ref
                                 .read(editorNotifier.notifier)
                                 .setCroppedImage(value),
-                          );
+                          )
+                          .then((value) => ref
+                              .read(editorNotifier.notifier)
+                              .showInterstitialAd());
                   },
                   icon: const Icon(
                     Icons.image_outlined,
@@ -469,7 +461,7 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
 
                     ref.read(editorNotifier.notifier).setShowTextSizer(false);
                     download(context);
-
+                    ref.read(editorNotifier.notifier).showInterstitialAd();
                     // showDownloadedDialog(context);
                   },
                   icon: const Icon(
@@ -499,8 +491,9 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
               IconButton(
                   tooltip: 'Close ',
                   onPressed: () {
-                    Navigator.pop(context);
-                    // showExitInterstitialAd();
+                    ref
+                        .read(editorNotifier.notifier)
+                        .showExitInterstitialAd(context);
                   },
                   icon: const Icon(
                     Icons.close,
@@ -518,7 +511,7 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
         body: SafeArea(
           child: Column(
             children: [
-              // const BannerSmall(),
+              const BannerSmall(),
               topButtons,
               Expanded(
                 child: Screenshot(
@@ -588,7 +581,7 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
                                 SocialShare.shareOptions(widget.quote);
                               },
                               child: Center(
-                                child: AutoSizeText(mainQuote!,
+                                child: AutoSizeText(mainQuote,
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       color: ref

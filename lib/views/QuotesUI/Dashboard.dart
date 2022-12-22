@@ -8,7 +8,6 @@ import '/utils/PageTrasition.dart';
 import '/views/Editor/SingleEditor.dart';
 import '/views/QuotesUI/FeaturedQuotes.dart';
 import '/views/QuotesUI/LatestQuotes.dart';
-import '/views/single_quote_page.dart';
 import '/views/widgets/FavouritePage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -125,7 +124,7 @@ class QuotesCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.watch(quoteProvider);
+    // ref.watch(quotesProvider);
     return // Generated code for this Column Widget...
         Padding(
       padding: const EdgeInsets.all(4.0),
@@ -197,12 +196,12 @@ class DashTools extends StatelessWidget {
               GestureDetector(
                 onTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => TrendingPage(
-                          // isHideBottomNavBar: (bool) {},
-                          // show: true,
-                          ),
-                    )),
+                    PageTransition(
+                        child: TrendingPage(
+                            // isHideBottomNavBar: (bool) {},
+                            // show: true,
+                            ),
+                        type: PageTransitionType.scale)),
                 child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(16, 0, 0, 0),
                   child: Material(
@@ -260,9 +259,14 @@ class DashTools extends StatelessWidget {
               GestureDetector(
                 onTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => LatestQuotes(),
-                    )),
+                    PageTransition(
+                        child: LatestQuotes(),
+                        type: PageTransitionType.leftToRight)
+                    // MaterialPageRoute(
+                    //   builder: (context) => LatestQuotes(),
+                    // )
+
+                    ),
                 child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(8, 0, 0, 0),
                   child: Material(
@@ -321,7 +325,8 @@ class DashTools extends StatelessWidget {
                 onTap: () => Navigator.push(
                     context,
                     PageTransition(
-                        child: FavouritePage(), type: PageTransitionType.fade)),
+                        child: FavouritePage(),
+                        type: PageTransitionType.rightToLeft)),
                 child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(8, 0, 0, 0),
                   child: Material(

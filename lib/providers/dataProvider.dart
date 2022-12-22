@@ -2,13 +2,19 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import '../Constants/keys.dart';
 import '../Controllers/OfflineHiveDataControllers.dart';
 import '../Network/Exceptions.dart';
+import '../models/love_quotes_english.dart';
 import '../models/post_list_model.dart';
 import 'package:http/http.dart' as http;
+
+import '../repositories/Quotes/quote_repository.dart';
+
+
 
 Future<PostModel> fetchPosts() async {
   PostModel results = PostModel();
@@ -80,14 +86,7 @@ Future<PostModel> fetchPosts() async {
   }
 }
 
-// final quotesRepositoryProvider = Provider((ref) => QuotesRepository());
 
-// final quotesProvider = FutureProvider<List<QuotesModel>?>((ref) {
-//   // access the provider above
-//   final repository = ref.watch(quotesRepositoryProvider);
-//   // use it to return a Future
-//   return repository.fetchQuotes(2);
-// });
 // final postRepositoryProvider = Provider((ref) => BlogRepository());
 
 // final postProvider = FutureProvider.autoDispose<List<PostModel>>((ref) {

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import '../../Monetization/Banners/small_banner.dart';
 import '../../post_list_view_hive_data.dart';
 import '/providers/QuotesUINotifier.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +15,6 @@ import 'FeaturedQuotes.dart';
 import 'TrendingQuotes.dart';
 
 class LatestQuotes extends ConsumerWidget {
-  final imagesx = "https://docs.flutter.dev/assets/images/404/dash_nest.png";
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -52,6 +52,7 @@ class LatestQuotes extends ConsumerWidget {
             )),
           )
         : Scaffold(
+            bottomNavigationBar: BannerSmall(),
             appBar: AppBar(
                 centerTitle: true,
                 title: const Text("Latest Categories",
@@ -100,14 +101,16 @@ class LatestQuotes extends ConsumerWidget {
                         return Stack(
                           children: [
                             LocationListItem(
-                                onTap: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            CategoryQuoteDetailPage(
-                                                i,
-                                                posts.items![i].title!,
-                                                quotes))),
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              CategoryQuoteDetailPage(
+                                                  i,
+                                                  posts.items![i].title!,
+                                                  quotes)));
+                                },
                                 // imageUrl: quotes[0].image!,
                                 imageUrl:
                                     imageList[imageList.length < i ? 0 : i],

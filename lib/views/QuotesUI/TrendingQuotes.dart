@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:quotes_status_creator/Monetization/AdmobHelper/AdmobHelper.dart';
+import 'package:quotes_status_creator/Monetization/Banners/small_banner.dart';
 import 'package:quotes_status_creator/utils/PageTrasition.dart';
 import 'package:quotes_status_creator/views/Editor/SingleEditor.dart';
 import 'package:social_share/social_share.dart';
@@ -13,6 +15,7 @@ import '/providers/QuotesUINotifier.dart';
 import '/repositories/Blog/trendingpost.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:provider/provider.dart' as pr;
 
 final trendingRepositoryProvider =
     Provider.autoDispose((ref) => TrendinRepository());
@@ -43,14 +46,13 @@ final trendingQuotesProvider =
 });
 
 class TrendingPage extends ConsumerWidget {
-  final imagesx = "https://docs.flutter.dev/assets/images/404/dash_nest.png";
-
   final bestGradints = [0, 9, 15, 10, 75, 88, 100, 114];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(mainQuotesProvider);
     final datas = ref.watch(mainQuotesProvider.notifier).trendinGQuotes;
+    final admobHelper = pr.Provider.of<AdmobHelper>(context, listen: false);
 
     print("trendings:$datas");
     return Scaffold(
@@ -64,14 +66,7 @@ class TrendingPage extends ConsumerWidget {
         title: Text("Trending Quotes"),
         centerTitle: true,
       ),
-      bottomNavigationBar: BottomAppBar(
-          child: Container(
-              color: Colors.red,
-              height: 50,
-              child: Text(
-                "Ads",
-                textAlign: TextAlign.center,
-              ))),
+      bottomNavigationBar: BannerSmall(),
       body: ListView.builder(
           scrollDirection: Axis.vertical,
           // shrinkWrap: false,
@@ -120,7 +115,7 @@ class TrendingPage extends ConsumerWidget {
                             left: MediaQuery.of(context).size.width * 0.79),
                         child: Align(
                           alignment: Alignment.topRight,
-                          child: buttons(context, "datas[i].quote"),
+                          child: buttons(context, datas[i].quote, admobHelper),
                         )),
                     Column(
                       children: [
@@ -171,7 +166,7 @@ class TrendingPage extends ConsumerWidget {
                           TextSpan(
                             children: [
                               TextSpan(
-                                text: "-$i{datas[i].author}",
+                                text: datas[i].author ?? '',
                                 style: TextStyle(
                                     fontSize: 10, fontWeight: FontWeight.bold),
                               ),
@@ -193,7 +188,7 @@ class TrendingPage extends ConsumerWidget {
     );
   }
 
-  Widget buttons(context, msg) {
+  Widget buttons(context, msg, AdmobHelper admobHelper) {
     return SizedBox(
       width: double.infinity,
       child: Column(
@@ -205,6 +200,7 @@ class TrendingPage extends ConsumerWidget {
             child: IconButton(
                 onPressed: () {
                   SocialShare.shareOptions(msg);
+                  admobHelper.decideIntersialAd(ActionAds.twoClicks);
                 },
                 icon: const Icon(
                   FontAwesomeIcons.share,
@@ -215,7 +211,9 @@ class TrendingPage extends ConsumerWidget {
             child: IconButton(
                 onPressed: () {
                   SocialShare.copyToClipboard(msg);
-                  Fluttertoast.showToast(msg: "Copied  to Clipboard");
+
+                  Fluttertoast.showToast(msg: "copied to clipboard");
+                  admobHelper.decideIntersialAd(ActionAds.twoClicks);
                 },
                 icon: const Icon(
                   Icons.copy,

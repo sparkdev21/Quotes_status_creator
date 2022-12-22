@@ -1,5 +1,8 @@
 import 'dart:io';
 
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+
+import '../../Monetization/AdHelpers.dart';
 import '/views/Editor/AlertStatefulDialog.dart';
 import '/views/Editor/FlutterUtils.dart';
 import 'package:flutter/material.dart';
@@ -118,6 +121,134 @@ class EditorNotifier extends ChangeNotifier {
     "37.png"
   ];
 
+  ///ads related
+  /////Ads Counters
+  int fontChangeCountAds = 0;
+  int gradientChnageCountAds = 0;
+  int imagechangeCounterAds = 0;
+  int textColorCountAds = 0;
+  int backgroundColorCountads = 0;
+  int nextButtonCounterAds = 0;
+  static const int maxFailedLoadAttempts = 3;
+  int _numInterstitialLoadAttempts = 0;
+  InterstitialAd? interstitialAd;
+  clearadsCount() {
+    fontChangeCountAds = 0;
+    textColorCountAds = 0;
+    backgroundColorCountads = 0;
+    nextButtonCounterAds = 0;
+    gradientChnageCountAds = 0;
+    backgroundColorCountads = 0;
+    imagechangeCounterAds = 0;
+  }
+
+  adsManger(int value, String button) {
+    if (button == 'font' && value >= 4) {
+      fontChangeCountAds = 0;
+
+      showInterstitialAd();
+      clearadsCount();
+    }
+    if (button == 'textColor' && value >= 6) {
+      textColorCountAds = 0;
+      showInterstitialAd();
+      clearadsCount();
+    }
+    if (button == 'gradient' && value >= 6) {
+      showInterstitialAd();
+      clearadsCount();
+    }
+    if (button == 'next' && value >= 6) {
+      showInterstitialAd();
+      clearadsCount();
+    }
+    if (button == 'image' && value >= 4) {
+      showInterstitialAd();
+      clearadsCount();
+    }
+    if (button == 'backColor' && value >= 8) {
+      showInterstitialAd();
+      clearadsCount();
+    }
+    if (button == 'favorite' && value >= 4) {
+      showInterstitialAd();
+      clearadsCount();
+    }
+    // if (button == 'blend' && value == 2) {
+    //   showInterstitialAd();
+    //   clearadsCount();
+    // }
+  }
+
+  void createInterstitialAd() {
+    InterstitialAd.load(
+        adUnitId: AdHelper.interstitialGoogleTestAdUnitId,
+        request: const AdRequest(),
+        adLoadCallback: InterstitialAdLoadCallback(
+          onAdLoaded: (InterstitialAd ad) {
+            debugPrint('$ad loaded');
+            interstitialAd = ad;
+            _numInterstitialLoadAttempts = 0;
+            // _interstitialAd!.setImmersiveMode(true);
+          },
+          onAdFailedToLoad: (LoadAdError error) {
+            debugPrint('InterstitialAd failed to load: $error.');
+            _numInterstitialLoadAttempts += 1;
+            interstitialAd = null;
+            if (_numInterstitialLoadAttempts < maxFailedLoadAttempts) {
+              createInterstitialAd();
+            }
+          },
+        ));
+  }
+
+  void showInterstitialAd() {
+    if (interstitialAd == null) {
+      debugPrint('Warning: attempt to show interstitial before loaded.');
+      return;
+    }
+    interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+      onAdShowedFullScreenContent: (InterstitialAd ad) =>
+          debugPrint('ad onAdShowedFullScreenContent.'),
+      onAdDismissedFullScreenContent: (InterstitialAd ad) {
+        debugPrint('$ad onAdDismissedFullScreenContent.');
+        ad.dispose();
+        createInterstitialAd();
+      },
+      onAdFailedToShowFullScreenContent: (InterstitialAd ad, AdError error) {
+        debugPrint('$ad onAdFailedToShowFullScreenContent: $error');
+        ad.dispose();
+        createInterstitialAd();
+      },
+    );
+    interstitialAd!.show();
+    interstitialAd = null;
+  }
+
+  void showExitInterstitialAd(context) {
+    if (interstitialAd == null) {
+      debugPrint('Warning: attempt to show interstitial before loaded.');
+      Navigator.pop(context);
+      return;
+    }
+    interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+      onAdShowedFullScreenContent: (InterstitialAd ad) =>
+          debugPrint('ad onAdShowedFullScreenContent.'),
+      onAdDismissedFullScreenContent: (InterstitialAd ad) {
+        debugPrint('$ad onAdDismissedFullScreenContent.');
+        ad.dispose();
+        Navigator.pop(context);
+      },
+      onAdFailedToShowFullScreenContent: (InterstitialAd ad, AdError error) {
+        debugPrint('$ad onAdFailedToShowFullScreenContent: $error');
+        ad.dispose();
+        createInterstitialAd();
+      },
+    );
+    interstitialAd!.show();
+    interstitialAd = null;
+  }
+
 // protrait Mode
   void protraitMode() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
@@ -155,6 +286,8 @@ class EditorNotifier extends ChangeNotifier {
   }
 
   setTextColor(Color value) {
+    textColorCountAds++;
+    adsManger(textColorCountAds, 'textColor');
     initialTextColor = value;
     notifyListeners();
   }
@@ -190,6 +323,8 @@ class EditorNotifier extends ChangeNotifier {
   }
 
   void randomFont() {
+    fontChangeCountAds++;
+    adsManger(fontChangeCountAds, 'font');
     int currentIndex = fonts.indexOf(_fontfamily);
     if (currentIndex >= fonts.length - 1) {
       currentIndex = fonts.indexOf('Billabong');
@@ -221,6 +356,8 @@ class EditorNotifier extends ChangeNotifier {
   }
 
   void setBackgroundImage() {
+    imagechangeCounterAds++;
+    adsManger(imagechangeCounterAds, 'image');
     _isAssetImageActive = true;
     croppedFile = null;
     gradientMode = false;
@@ -301,6 +438,8 @@ class EditorNotifier extends ChangeNotifier {
   CroppedFile? croppedFile;
 
   void setGradientColor(int value) {
+    gradientChnageCountAds++;
+    adsManger(gradientChnageCountAds, 'gradient');
     if (croppedFile != null) {
       return;
     }
@@ -315,6 +454,8 @@ class EditorNotifier extends ChangeNotifier {
   Color initialContainerColor = Colors.white;
 
   void setContainerColor(value) {
+    backgroundColorCountads++;
+    adsManger(backgroundColorCountads, 'backColor');
     if (croppedFile != null) {
       return;
     }

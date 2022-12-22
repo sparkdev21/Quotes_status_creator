@@ -29,7 +29,7 @@ class _FavouritePageState extends State<FavouritePage> {
   // Delete info from people box
   _deleteInfo(int index) {
     contactBox.deleteAt(index);
-    admobHelper.decideIntersialAd(ActionAds.twoClicks);
+    admobHelper.decideIntersialAd(ActionAds.counterShow);
     print('Item deleted from box at index: $index');
   }
 
@@ -41,8 +41,6 @@ class _FavouritePageState extends State<FavouritePage> {
   @override
   void dispose() {
     Fluttertoast.showToast(msg: "dispoded");
-    admobHelper.dispose();
-
     debugPrint("dispded");
     super.dispose();
   }
@@ -50,7 +48,6 @@ class _FavouritePageState extends State<FavouritePage> {
   @override
   void initState() {
     super.initState();
-
     admobHelper.createIntersialad();
     contactBox = Hive.box(sq.catBoxName());
   }
@@ -61,13 +58,11 @@ class _FavouritePageState extends State<FavouritePage> {
       valueListenable: contactBox.listenable(),
       builder: (context, Box box, widget) {
         if (box.isEmpty) {
-          return Stack(
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Center(
-                child: OutlinedButton(
-                    onPressed: () {}, child: Text('No Favourites Added Yet!')),
-              ),
               const NativeBanner(),
+              Text('Empty'),
             ],
           );
         } else {

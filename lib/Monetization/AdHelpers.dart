@@ -91,4 +91,24 @@ class AdHelper {
       throw UnsupportedError("Unsupported platform");
     }
   }
+
+  static String get nativeGoogleTestAdUnitId {
+    if (Platform.isAndroid) {
+      return "ca-app-pub-3940256099942544/2247696110";
+    } else if (Platform.isIOS) {
+      return "ca-app-pub-3940256099942544/4411468910";
+    } else {
+      throw UnsupportedError("Unsupported platform");
+    }
+  }
+
+  static String get nativeVideoGoogleTestAdUnitId {
+    if (Platform.isAndroid) {
+      return "ca-app-pub-3940256099942544/1044960115";
+    } else if (Platform.isIOS) {
+      return "ca-app-pub-3940256099942544/4411468910";
+    } else {
+      throw UnsupportedError("Unsupported platform");
+    }
+  }
 }

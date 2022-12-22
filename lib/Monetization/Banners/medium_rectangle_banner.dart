@@ -19,7 +19,7 @@ class _BannerMediumRectangleState extends State<BannerMediumRectangle> {
   @override
   void didChangeDependencies() {
     _bannerAd = BannerAd(
-      adUnitId: AdHelper.bannerAdUnitId,
+      adUnitId: AdHelper.bannerGoogleAdmobOnlyAdUnitId,
       request: const AdRequest(),
       size: AdSize.mediumRectangle,
       listener: BannerAdListener(
@@ -49,13 +49,13 @@ class _BannerMediumRectangleState extends State<BannerMediumRectangle> {
   @override
   void dispose() {
     super.dispose();
-    debugPrint("Adbanner Widget is Disposed:SMBANNER2");
+    debugPrint("Adbanner Widget is Disposed:Medium");
     _bannerAd.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    debugPrint("Adbanner Widget is building:SMBANNER2");
+    debugPrint("Adbanner Widget is building:Medium");
 
     return _bannerReady
         ? SizedBox(

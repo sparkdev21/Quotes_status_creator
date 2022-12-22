@@ -1,7 +1,10 @@
+import 'package:quotes_status_creator/Monetization/Banners/small_banner.dart';
+import 'package:quotes_status_creator/Monetization/NativeAds/native_banner.dart';
 import 'package:quotes_status_creator/utils/PageTrasition.dart';
 import 'package:quotes_status_creator/views/Editor/SingleEditor.dart';
 import 'package:social_share/social_share.dart';
 
+import '../../Monetization/AdmobHelper/AdmobHelper.dart';
 import '/models/HiveModel/hive_quote_data_model.dart';
 import '/services/store_quotes.dart';
 import 'package:flutter/material.dart';
@@ -20,22 +23,32 @@ class FavouriteCategoryPage extends StatefulWidget {
 class _FavouriteCategoryPageState extends State<FavouriteCategoryPage> {
   late final Box contactBox;
   late String category;
+  AdmobHelper admobHelper = new AdmobHelper();
   StoreQuotes sq = StoreQuotes();
   // Delete info from people box
   _deleteInfo(int index) {
     contactBox.deleteAt(index);
-
+    admobHelper.decideIntersialAd(ActionAds.twoClicks);
     print('Item deleted from box at index: $index');
+  }
+
+  _sharemsg(msg) {
+    SocialShare.shareOptions(msg);
+    admobHelper.decideIntersialAd(
+      ActionAds.counterShow,
+    );
   }
 
   @override
   void dispose() {
+    admobHelper.dispose();
     super.dispose();
   }
 
   @override
   void initState() {
     super.initState();
+    admobHelper.createIntersialad();
     // Get reference to an already opened box
     category = widget.category;
     contactBox = Hive.box(sq.catBoxName());
@@ -44,6 +57,7 @@ class _FavouriteCategoryPageState extends State<FavouriteCategoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        bottomNavigationBar: const BannerSmall(),
         appBar: AppBar(
           title: const Text('Favourites '),
           centerTitle: true,
@@ -52,8 +66,12 @@ class _FavouriteCategoryPageState extends State<FavouriteCategoryPage> {
           valueListenable: contactBox.listenable(),
           builder: (context, Box box, widget) {
             if (box.isEmpty) {
-              return const Center(
-                child: Text('Empty'),
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  const NativeBanner(),
+                  Text('No Favourites Added Yet!'),
+                ],
               );
             } else {
               return ListView.builder(
@@ -117,8 +135,7 @@ class _FavouriteCategoryPageState extends State<FavouriteCategoryPage> {
                                       ),
                                       IconButton(
                                         onPressed: () =>
-                                            SocialShare.shareOptions(
-                                                personData.quote),
+                                            _sharemsg(personData.quote),
                                         icon: const Icon(
                                           Icons.share,
                                           color: Color.fromARGB(
@@ -150,106 +167,5 @@ class _FavouriteCategoryPageState extends State<FavouriteCategoryPage> {
             }
           },
         ));
-  }
-}
-
-class TabLayoutExample extends StatefulWidget {
-  final ValueListenableBuilder<Box> valueListenableBuilder;
-  TabLayoutExample(this.valueListenableBuilder);
-
-  @override
-  State<StatefulWidget> createState() {
-    return _TabLayoutExampleState();
-  }
-}
-
-class _TabLayoutExampleState extends State<TabLayoutExample>
-    with TickerProviderStateMixin {
-  late TabController _tabController;
-  late ValueListenableBuilder<Box> valueListenableBuilder;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 6, vsync: this);
-    _tabController.animateTo(2);
-    valueListenableBuilder = widget.valueListenableBuilder;
-  }
-
-  static const List<Tab> _tabs = [
-    const Tab(icon: Icon(Icons.looks_two), text: 'Tab one'),
-    const Tab(icon: Icon(Icons.looks_two), text: 'Tab Two'),
-    const Tab(icon: Icon(Icons.looks_3), text: 'Tab Three'),
-    const Tab(icon: Icon(Icons.looks_4), text: 'Tab Four'),
-    const Tab(icon: Icon(Icons.looks_5), text: 'Tab Five'),
-    const Tab(icon: Icon(Icons.looks_6), text: 'Tab Six'),
-  ];
-
-  static List<Widget> _views = [];
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: DefaultTabController(
-        length: 6,
-        child: Scaffold(
-          appBar: AppBar(
-            bottom: TabBar(
-              labelColor: Colors.white,
-              unselectedLabelColor: Colors.grey,
-              labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-              unselectedLabelStyle:
-                  const TextStyle(fontStyle: FontStyle.italic),
-              overlayColor:
-                  MaterialStateColor.resolveWith((Set<MaterialState> states) {
-                if (states.contains(MaterialState.pressed)) {
-                  return Colors.blue;
-                }
-                if (states.contains(MaterialState.focused)) {
-                  return Colors.orange;
-                } else if (states.contains(MaterialState.hovered)) {
-                  return Colors.pinkAccent;
-                }
-
-                return Colors.transparent;
-              }),
-              indicatorWeight: 10,
-              indicatorColor: Colors.red,
-              indicatorSize: TabBarIndicatorSize.tab,
-              indicatorPadding: const EdgeInsets.all(5),
-              indicator: BoxDecoration(
-                border: Border.all(color: Colors.red),
-                borderRadius: BorderRadius.circular(10),
-                color: Colors.pinkAccent,
-              ),
-              isScrollable: true,
-              physics: BouncingScrollPhysics(),
-              onTap: (int index) {
-                print('Tab $index is tapped');
-              },
-              enableFeedback: true,
-              // Uncomment the line below and remove DefaultTabController if you want to use a custom TabController
-              // controller: _tabController,
-              tabs: _tabs,
-            ),
-            title: const Text('Woolha.com Flutter Tutorial'),
-            backgroundColor: Colors.teal,
-          ),
-          body: TabBarView(
-            physics: BouncingScrollPhysics(),
-            // Uncomment the line below and remove DefaultTabController if you want to use a custom TabController
-            // controller: _tabController,
-            children: [
-              valueListenableBuilder,
-              const Center(child: const Text('Content of Tab Two')),
-              const Center(child: const Text('Content of Tab Three')),
-              const Center(child: const Text('Content of Tab Four')),
-              const Center(child: const Text('Content of Tab Five')),
-              const Center(child: const Text('Content of Tab Six')),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }

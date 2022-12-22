@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:quotes_status_creator/providers/ThemeProvider.dart';
@@ -18,9 +19,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
+import 'Monetization/AdmobHelper/AdmobHelper.dart';
 import 'Monetization/Adstate.dart';
 import 'utils/ReceiveIntent/Receive_intent.dart';
 import 'views/Editor/FlutterUtils.dart';
+import 'package:provider/provider.dart' as pr;
 
 const String homeRoute = "home";
 const String showDataRoute = "showData";
@@ -47,14 +50,22 @@ void main() async {
   final adstate = AdState(initFuture);
   await adstate.initAds();
   InitData initData = await init();
-
+  AdmobHelper.initialization();
   await HiveInjector.setup();
   runApp(ProviderScope(
     child: MaterialApp(
         debugShowCheckedModeBanner: false,
         // showPerformanceOverlay: true,
-        home: MyApp(
-          initData: initData,
+        home: pr.ChangeNotifierProvider(
+          create: (_) => AdmobHelper(),
+          child: AnnotatedRegion(
+            value: SystemUiOverlayStyle(
+              statusBarColor: Colors.black45,
+            ),
+            child: MyApp(
+              initData: initData,
+            ),
+          ),
         )),
   ));
 }
@@ -92,6 +103,7 @@ class _MyAppState extends ConsumerState<MyApp> {
 
     ref.read(trendingQuotesProvider);
     ref.read(userQuotesProvider);
+    ref.read(themeProvider.notifier).setThemeMode();
   }
 
   @override
@@ -128,7 +140,7 @@ class _MyAppState extends ConsumerState<MyApp> {
           blendOnLevel: 15,
           blendOnColors: false,
           inputDecoratorRadius: 17.0,
-          appBarBackgroundSchemeColor: SchemeColor.primary,
+          appBarBackgroundSchemeColor: SchemeColor.background,
           navigationBarOpacity: 0.86,
           fabRadius: 40.0,
           fabSchemeColor: SchemeColor.background,

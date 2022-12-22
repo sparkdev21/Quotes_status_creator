@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:quotes_status_creator/utils/PageTrasition.dart';
 import 'package:quotes_status_creator/views/Category_quote_detail_page.dart';
 import 'package:quotes_status_creator/views/QuotesUI/Categories_grid.dart';
@@ -23,7 +24,10 @@ final blogProvider = FutureProvider.autoDispose<PostModel>((ref) {
   return repository.fetchPosts();
 });
 
-final managedblogProvider = FutureProvider.autoDispose<PostModel>((ref) {
+final managedblogProvider = FutureProvider.autoDispose<PostModel>((ref) async {
+  ref.onDispose(() {
+    debugPrint("Disposed blog provider");
+  });
   // access the provider above
   final repository = ref.watch(blogRepositoryProvider);
   // use it to return a Future
@@ -31,8 +35,9 @@ final managedblogProvider = FutureProvider.autoDispose<PostModel>((ref) {
 
   List<List<QuotesModel>> quotesList = [];
   List<String> titles = [];
-  datas.then((quotes) {
+  await datas.then((quotes) {
     ref.read(mainQuotesProvider.notifier).setPostData(quotes);
+    Fluttertoast.showToast(msg: quotes.toString());
 
     for (int i = 0; i < quotes.items!.length; i++) {
       print("GG:${quotes.items![i].title!}");

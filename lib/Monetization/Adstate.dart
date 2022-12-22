@@ -21,6 +21,7 @@ class AdState {
     });
   }
 
+
   BannerAd getBannerAd() {
     return BannerAd(
       adUnitId: AdHelper.bannerGoogleAdmobOnlyAdUnitId,

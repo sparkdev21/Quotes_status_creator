@@ -2,7 +2,11 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:quotes_status_creator/Monetization/AdProviders/BannerAdProvider.dart';
 import 'package:quotes_status_creator/providers/QuotesUINotifier.dart';
+import 'package:quotes_status_creator/providers/dataProvider.dart';
+import 'package:quotes_status_creator/repositories/Quotes/quote_repository.dart';
 import 'package:quotes_status_creator/utils/PageTrasition.dart';
 import 'package:quotes_status_creator/views/Editor/SingleEditor.dart';
 import 'package:social_share/social_share.dart';
@@ -23,6 +27,10 @@ class FeaturedQuotesPage extends ConsumerWidget {
           title: Text("Random quotes"),
           centerTitle: true,
         ),
+        bottomNavigationBar: SizedBox(
+          height: 50,
+          child: ref.watch(bannerWidget)),
+        
         body: Container(
             height: windowHeight,
             child: LayoutBuilder(builder: (_, box) {
@@ -46,7 +54,7 @@ class QuotesCards extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.watch(quoteProvider);
+    // ref.watch(quotesProvider);
     return GestureDetector(
         onDoubleTap: () {
           SocialShare.shareOptions(quote);

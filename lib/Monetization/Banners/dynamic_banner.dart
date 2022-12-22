@@ -4,16 +4,17 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../AdHelpers.dart';
 
-class BannerSmall extends StatefulWidget {
-  const BannerSmall({Key? key}) : super(key: key);
+class DynamicBanner extends StatefulWidget {
+  final AdSize adsize;
+  const DynamicBanner({Key? key, required this.adsize}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
-    return _BannerSmallState();
+    return _DynamicBannerState();
   }
 }
 
-class _BannerSmallState extends State<BannerSmall> {
+class _DynamicBannerState extends State<DynamicBanner> {
   late BannerAd _bannerAd;
   bool _bannerReady = false;
 
@@ -22,7 +23,7 @@ class _BannerSmallState extends State<BannerSmall> {
     _bannerAd = BannerAd(
       adUnitId: AdHelper.bannerGoogleAdmobOnlyAdUnitId,
       request: const AdRequest(),
-      size: AdSize.banner,
+      size: widget.adsize,
       listener: BannerAdListener(
         onAdLoaded: (_) {
           setState(() {
@@ -61,10 +62,10 @@ class _BannerSmallState extends State<BannerSmall> {
 
     return _bannerReady
         ? SizedBox(
-            width: _bannerAd.size.width.toDouble(),
-            height: _bannerAd.size.height.toDouble(),
-            child: AdWidget(ad: _bannerAd),
-          )
+          width: _bannerAd.size.width.toDouble(),
+          height: _bannerAd.size.height.toDouble(),
+          child: AdWidget(ad: _bannerAd),
+        )
         : const SizedBox.shrink();
   }
 }

@@ -1,6 +1,7 @@
-import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:quotes_status_creator/Constants/Thmes.dart';
+import 'package:quotes_status_creator/Monetization/Banners/dynamic_banner.dart';
 
 import '../../providers/ThemeProvider.dart';
 import '../QuotesUI/flutter_flow_theme.dart';
@@ -53,155 +54,97 @@ class _SettingsUIState extends State<SettingsUI> {
       ),
       body: Consumer(builder: (context, ref, _) {
         return SafeArea(
-          child: Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(16, 12, 16, 0),
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      // 'Dark Theme\n ${ref.read(themeProvider.notifier).flexScheme}:',
-                      'Dark Theme',
-                      style: FlutterFlowTheme.of(context).subtitle2,
-                    ),
-                    Switch(
-                      value: switchValue ??= true,
-                      onChanged: (newValue) async {
-                        setState(() => switchValue = newValue);
-
-                        // ref.watch(themeProvider.notifier).darkTheme =
-                        //     !ref.watch(themeProvider.notifier).darkTheme;
-                        ref
-                            .read(themeProvider.notifier)
-                            .toggleTheme(switchValue!);
-                      },
-                      activeColor: FlutterFlowTheme.of(context).primaryColor,
-                      inactiveTrackColor:
-                          FlutterFlowTheme.of(context).primaryBackground,
-                    ),
-                  ],
-                ),
-                // Row(
-                //   mainAxisSize: MainAxisSize.max,
-                //   mainAxisAlignment: MainAxisAlignment.start,
-                //   children: [
-                //     IconButton(
-                //       icon: ref.watch(themeProvider.notifier).darkTheme
-                //           ? const Icon(Icons.light_mode_outlined)
-                //           : const Icon(Icons.dark_mode_outlined),
-                //       onPressed: () {
-                //         ref.watch(themeProvider.notifier).darkTheme =
-                //             !ref.watch(themeProvider.notifier).darkTheme;
-                //         ref.read(themeProvider.notifier).toggleTheme(
-                //             ref.watch(themeProvider.notifier).darkTheme);
-                //       },
-                //     ),
-                //   ],
-                // ),
-                Text(
-                  // 'Dark Theme\n ${ref.read(themeProvider.notifier).flexScheme}:',
-                  'Choose Colors',
-                  style: FlutterFlowTheme.of(context).subtitle2,
-                ),
-                // Expanded(
-                //   child: ListView(
-                //     children: [
-                //       for (int i = 0; i < FlexScheme.values.length; i++)
-                //         GestureDetector(
-                //             onTap: () => ref
-                //                 .read(themeProvider.notifier)
-                //                 .setColor(FlexScheme.values[i]),
-
-                //             // child:  ListTile(
-                //             //   leading: Card(color:FlexScheme.blueWhale ),
-                //             // )
-                //             child: Card(
-                //               color:
-                //                   ref.read(themeProvider.notifier).flexScheme ==
-                //                           FlexScheme.values[i]
-                //                       ? Theme.of(context).splashColor
-                //                       : Theme.of(context).cardColor,
-                //               child: ListTile(
-                //                 tileColor:
-                //                     Theme.of(context).listTileTheme.tileColor,
-                //                 leading: Text(FlexScheme.values[i]
-                //                     .toString()
-                //                     .split('.')[1]),
-                //                 trailing: Icon(Icons.arrow_forward_ios),
-                //               ),
-                //             ))
-                //     ],
-                //   ),
-                // )
-                Expanded(
-                  child: ListView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Flexible(
+                flex: 2,
+                child: Padding(
+                  padding: EdgeInsetsDirectional.fromSTEB(16, 12, 16, 0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.max,
                     children: [
-                      for (int i = 0; i < themeColors.length; i++)
-                        GestureDetector(
-                            onTap: () => ref
-                                .read(themeProvider.notifier)
-                                .setColor(FlexScheme.values[i]),
+                      Row(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text(
+                            // 'Dark Theme\n ${ref.read(themeProvider.notifier).flexScheme}:',
+                            'Dark Theme',
+                            style: FlutterFlowTheme.of(context).subtitle2,
+                          ),
+                          Switch(
+                            value: ref.watch(themeProvider.notifier).darkTheme,
+                            // switchValue ??= true,
+                            onChanged: (newValue) async {
+                              // setState(() => switchValue = newValue);
 
-                            // child:  ListTile(
-                            //   leading: Card(color:FlexScheme.blueWhale ),
-                            // )
-                            child: Card(
-                              color:
-                                  ref.read(themeProvider.notifier).flexScheme ==
-                                          FlexScheme.values[i]
-                                      ? Theme.of(context).splashColor
-                                      : Theme.of(context).cardColor,
-                              child: ListTile(
-                                tileColor:
-                                    Theme.of(context).listTileTheme.tileColor,
-                                leading: Text(colorsname[i].toString()),
-                                trailing: Icon(Icons.arrow_forward_ios),
-                              ),
-                            ))
+                              // ref.watch(themeProvider.notifier).darkTheme =
+                              //     !ref.watch(themeProvider.notifier).darkTheme;
+                              ref
+                                  .read(themeProvider.notifier)
+                                  .toggleTheme(newValue);
+                            },
+                            activeColor:
+                                FlutterFlowTheme.of(context).primaryColor,
+                            inactiveTrackColor:
+                                FlutterFlowTheme.of(context).primaryBackground,
+                          ),
+                        ],
+                      ),
+                      Text(
+                        // 'Dark Theme\n ${ref.read(themeProvider.notifier).flexScheme}:',
+                        'Choose Colors',
+                        style: FlutterFlowTheme.of(context).subtitle2,
+                      ),
+                      Flexible(
+                        child: ListView(
+                          children: [
+                            for (int i = 0; i < themeColors.length; i++)
+                              GestureDetector(
+                                  onTap: () => ref
+                                      .read(themeProvider.notifier)
+                                      .setColor(themeColors[i], i),
+                                  child: Card(
+                                    color: ref
+                                                .read(themeProvider.notifier)
+                                                .flexScheme ==
+                                            themeColors[i]
+                                        ? Theme.of(context).highlightColor
+                                        : Theme.of(context).cardColor,
+                                    child: ListTile(
+                                      tileColor: Theme.of(context)
+                                          .listTileTheme
+                                          .tileColor,
+                                      leading: Text(colorsname[i].toString()),
+                                      trailing: Icon(
+                                        Icons.arrow_forward_ios,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                      ),
+                                    ),
+                                  )),
+                          ],
+                        ),
+                      ),
+                      // Expanded(child: const )
                     ],
                   ),
-                )
-
-                // Padding(
-                //   padding: EdgeInsetsDirectional.fromSTEB(0, 24, 0, 24),
-                //   child: FFButtonWidget(
-                //     onPressed: () async {
-                //       Navigator.pop(context);
-                //     },
-                //     text: 'Save Changes',
-                //     options: FFButtonOptions(
-                //       width: 300,
-                //       height: 50,
-                //       color: FlutterFlowTheme.of(context).primaryColor,
-                //       textStyle: FlutterFlowTheme.of(context).subtitle2.override(
-                //             fontFamily: 'Poppins',
-                //             color: Colors.white,
-                //           ),
-                //       elevation: 2,
-                //       borderSide: BorderSide(
-                //         color: Colors.transparent,
-                //         width: 1,
-                //       ),
-                //     ),
-                //   ),
-                // ),
-              ],
-            ),
+                ),
+              ),
+              Flexible(
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: DynamicBanner(adsize: AdSize.largeBanner),
+                ),
+              )
+            ],
           ),
         );
       }),
     );
-  }
-}
-
-class ThemeContainer extends StatelessWidget {
-  const ThemeContainer({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container();
   }
 }

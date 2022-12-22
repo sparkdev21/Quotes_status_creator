@@ -9,6 +9,7 @@ import 'package:gradient_colors/gradient_colors.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:quotes_status_creator/models/love_quotes_english.dart';
 import 'package:quotes_status_creator/providers/QuotesUINotifier.dart';
+import 'package:quotes_status_creator/repositories/Quotes/quote_repository.dart';
 import 'package:quotes_status_creator/utils/PageTrasition.dart';
 import 'package:quotes_status_creator/views/Editor/SingleEditor.dart';
 import 'package:quotes_status_creator/views/QuotesUI/Categories_grid.dart';
@@ -187,7 +188,7 @@ class StackQuotes extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.watch(quoteProvider);
+    // ref.watch(quotesProvider);
     return // Generated code for this Column Widget...
         Padding(
       padding: const EdgeInsets.all(8.0),
