@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../AdHelpers.dart';
 
-class BannerSmall extends StatefulWidget {
-  const BannerSmall({Key? key}) : super(key: key);
+class BannerMediumRectangleFeeds extends StatefulWidget {
+  const BannerMediumRectangleFeeds({Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
-    return _BannerSmallState();
+    return _BannerMediumRectangleFeedsState();
   }
 }
 
-class _BannerSmallState extends State<BannerSmall> {
+class _BannerMediumRectangleFeedsState
+    extends State<BannerMediumRectangleFeeds>
+    with AutomaticKeepAliveClientMixin {
   late BannerAd _bannerAd;
   bool _bannerReady = false;
 
@@ -22,19 +23,19 @@ class _BannerSmallState extends State<BannerSmall> {
     _bannerAd = BannerAd(
       adUnitId: AdHelper.bannerGoogleAdmobOnlyAdUnitId,
       request: const AdRequest(),
-      size: AdSize.banner,
+      size: AdSize.mediumRectangle,
       listener: BannerAdListener(
         onAdLoaded: (_) {
           setState(() {
             _bannerReady = true;
-            debugPrint("Adbanner Admob Widget is loading:SatefulBanner2");
+            debugPrint("BannerMedium is loading:SatefulBanner2");
           });
         },
-        onAdOpened: (ad) => debugPrint('Ad opened.'),
-        onAdClosed: (ad) => debugPrint('Ad closed.'),
-        onAdImpression: (Ad ad) =>
-            debugPrint('$Ad Add Impression Banner Small Done.'),
+        onAdImpression: (ad) {
+          debugPrint("BannerMedium Showed :SatefulBanner $ad");
+        },
         onAdFailedToLoad: (ad, err) {
+          debugPrint("BannerMedium Ad Failed to load $err");
           setState(() {
             _bannerReady = false;
           });
@@ -50,14 +51,14 @@ class _BannerSmallState extends State<BannerSmall> {
   @override
   void dispose() {
     super.dispose();
-    debugPrint("Banner Small  is Disposed:SatefulBanner");
-    Fluttertoast.showToast(msg: "disposed SatefulBanner");
+    debugPrint("BannerMedium  Widget is Disposed:Medium");
     _bannerAd.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    debugPrint("Adbanner Widget is building:SMBANNER2");
+    super.build(context);
+    debugPrint("BannerMedium Adbanner Widget is building:Medium");
 
     return _bannerReady
         ? SizedBox(
@@ -67,4 +68,8 @@ class _BannerSmallState extends State<BannerSmall> {
           )
         : const SizedBox.shrink();
   }
+
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
 }

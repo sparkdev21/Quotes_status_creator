@@ -10,9 +10,9 @@ import 'package:fluttertoast/fluttertoast.dart';
 import '../../Constants/keys.dart';
 import '../../Controllers/OfflineHiveDataControllers.dart';
 
-class UserQuotesRepository {
+class FeaturedRepository {
   String url =
-      'https://www.googleapis.com/blogger/v3/blogs/$blogId/pages/$userQuotesPageId?key=$apiKey';
+      'https://www.googleapis.com/blogger/v3/blogs/$blogId/pages/$featuredPageId?key=$apiKey';
   Future<TrendingModel> fetchPosts() async {
     TrendingModel results = TrendingModel();
 
@@ -21,24 +21,24 @@ class UserQuotesRepository {
 
     _fetchDataFromHive() async {
       Map<String, dynamic> jsonParsed = json
-          .decode(await quoteHiveController.retriveUserQuotesData() as String);
+          .decode(await quoteHiveController.retriveFeaturedData() as String);
       // print(jsonParsed);
       results = TrendingModel.fromJson(jsonParsed);
       results.content =
           results.content!.replaceAll(RegExp(r'<script>|</script>'), "");
-      Fluttertoast.showToast(
-          msg: "Fetched from hive  :UserQUotes Data :$results");
+      print("else Hive code Exceuted");
+      Fluttertoast.showToast(msg: "Fetched from hive");
 
       return results;
     }
 
     _fetchFromInternet() async {
-      results = await http.getUserqUotes(url);
-      showToast(debug, "Fetched from Internet User QUotesData :$results ");
+      results = await http.getFeaturedQuotes(url);
+      showToast(debug, "Fetched from Internet");
       return results;
     }
 
-    if (await quoteHiveController.retriveUserQuotesData() != null) {
+    if (await quoteHiveController.retriveFeaturedData() != null) {
       return _fetchDataFromHive();
     } else {
       return _fetchFromInternet();

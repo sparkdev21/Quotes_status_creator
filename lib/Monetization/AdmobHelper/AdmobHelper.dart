@@ -1,5 +1,5 @@
+import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:flutter/foundation.dart';
 import 'package:quotes_status_creator/Monetization/AdHelpers.dart';
 
 enum ActionAds {
@@ -63,12 +63,6 @@ class AdmobHelper extends ChangeNotifier {
   int interstial_shown = 0;
 
   get interstialshown => interstialshown;
-
-  static initialization() {
-    if (MobileAds.instance == null) {
-      MobileAds.instance.initialize();
-    }
-  }
 
   static BannerAd getBannerAd() {
     BannerAd bAd = new BannerAd(
@@ -198,16 +192,67 @@ class AdmobHelper extends ChangeNotifier {
     _interstitialAd = null;
   }
 
-  void loadRewardedAd() {
-    RewardedAd.load(
-        adUnitId: 'ca-app-pub-3940256099942544/5224354917',
-        request: AdRequest(),
-        rewardedAdLoadCallback:
-            RewardedAdLoadCallback(onAdLoaded: (RewardedAd ad) {
-          print("Ad loaded");
-          this._rewardedAd = ad;
-        }, onAdFailedToLoad: (LoadAdError error) {
-          // loadRewardedAd();
-        }));
+  void showDownloadInterad(context) {
+    if (_interstitialAd == null) {
+      showDownloadedDialog(context);
+      return;
+    }
+
+    _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+        onAdShowedFullScreenContent: (InterstitialAd ad) {
+      interstial_shown + 1;
+      createIntersialad();
+      print("ad onAdshowedFullscreen");
+    }, onAdDismissedFullScreenContent: (InterstitialAd ad) {
+      print("ad Disposed");
+      showDownloadedDialog(context);
+      ad.dispose();
+    }, onAdFailedToShowFullScreenContent: (InterstitialAd ad, AdError aderror) {
+      print('$ad OnAdFailed $aderror');
+      ad.dispose();
+      createIntersialad();
+    });
+
+    _interstitialAd!.show();
+
+    _interstitialAd = null;
+  }
+
+  void showDownloadedDialog(context) async {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          Future.delayed(Duration(seconds: 3))
+              .then((value) => Navigator.pop(context));
+          return AlertDialog(
+            backgroundColor: Colors.green.shade100,
+            content: const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Text(
+                "Successfully Downloaded and Saved in Gallery",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
+            actions: [
+              IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.done))
+            ],
+          );
+        });
+
+    // void loadRewardedAd() {
+    //   RewardedAd.load(
+    //       adUnitId: 'ca-app-pub-3940256099942544/5224354917',
+    //       request: AdRequest(),
+    //       rewardedAdLoadCallback:
+    //           RewardedAdLoadCallback(onAdLoaded: (RewardedAd ad) {
+    //         print("Ad loaded");
+    //         this._rewardedAd = ad;
+    //       }, onAdFailedToLoad: (LoadAdError error) {
+    //         // loadRewardedAd();
+    //       }));
+    // }
   }
 }

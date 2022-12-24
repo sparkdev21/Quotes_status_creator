@@ -1,15 +1,13 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:quotes_status_creator/providers/ThemeProvider.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
-import 'package:quotes_status_creator/views/QuotesUI/UserQuotesPage.dart';
+import 'package:quotes_status_creator/utils/PageTrasition.dart';
 
 import './post_list_view_hive_data.dart';
 import './views/ParalelEffect/PageView/Hide_on_scroll.dart';
-import './views/QuotesUI/FeaturedQuotes.dart';
-import './views/QuotesUI/TrendingQuotes.dart';
-import 'package:firebase_core/firebase_core.dart';
 import './Locator/locator.dart';
 import './injectors/hive_injector.dart';
 import './views/Editor/SingleEditor.dart';
@@ -17,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
+import 'Constants/keys.dart';
 import 'Monetization/AdmobHelper/AdmobHelper.dart';
 import 'Monetization/Adstate.dart';
 import 'utils/ReceiveIntent/Receive_intent.dart';
@@ -40,13 +39,12 @@ Future<InitData> init() async {
 void main() async {
   setup();
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
 
   final initFuture = MobileAds.instance.initialize();
   final adstate = AdState(initFuture);
   await adstate.initAds();
   InitData initData = await init();
-  AdmobHelper.initialization();
+
   await HiveInjector.setup();
   runApp(ProviderScope(
     child: MaterialApp(
@@ -79,10 +77,27 @@ class _MyAppState extends ConsumerState<MyApp> {
   final _navKey = GlobalKey<NavigatorState>();
 
   late StreamSubscription _intentDataStreamSubscription;
+  Future<void> initOnsignal() async {
+    if (!mounted) {
+      return;
+    }
+    OneSignal.shared.setLogLevel(OSLogLevel.verbose, OSLogLevel.none);
+    OneSignal.shared.setAppId(oneSignalAppId);
+    OneSignal.shared
+        .setNotificationOpenedHandler((OSNotificationOpenedResult result) {
+      _navKey.currentState!.push(PageTransition(
+          child: SimpleEditorPage(
+            quote: ' ${result.notification.rawPayload!['alert']}',
+            title: 'notify',
+          ),
+          type: PageTransitionType.scale));
+    });
+  }
 
   @override
   void initState() {
     ref.read(managedblogProvider);
+    initOnsignal();
 
     super.initState();
 
@@ -95,10 +110,6 @@ class _MyAppState extends ConsumerState<MyApp> {
       );
     });
 
-    ref.read(featuredQuotesProvider);
-
-    ref.read(trendingQuotesProvider);
-    ref.read(userQuotesProvider);
     ref.read(themeProvider.notifier).setThemeMode();
   }
 
@@ -170,7 +181,7 @@ class _MyAppState extends ConsumerState<MyApp> {
         switch (settings.name) {
           case homeRoute:
             // return MaterialPageRoute(builder: (_) => QuotesApp());
-            return MaterialPageRoute(builder: (_) => HideOnScroll());
+            return MaterialPageRoute(builder: (_) => HomePage());
           case showDataRoute:
             {
               if (settings.arguments != null) {

@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:quotes_status_creator/Monetization/NativeAds/bigNativebanner.dart';
+
 import '/models/post_list_model.dart';
 import '/providers/QuotesUINotifier.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -57,18 +59,23 @@ class CategoriesParallax extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     PostModel datas = ref.watch(mainQuotesProvider.notifier).postData;
+    
     if (datas.items == null) return Center(child: CircularProgressIndicator());
     return NotificationListener<ScrollNotification>(
         onNotification: _handleScrollNotification,
         child: ListView.builder(
             scrollDirection: Axis.vertical,
             shrinkWrap: true,
-            itemCount: datas.items!.length,
-            itemBuilder: (context, int i) {
+            itemCount: datas.items!.length+1,
+            itemBuilder: (context, i) {
+               if (i == datas.items!.length) {
+                return BigNativeBanner();
+              }
+
               PostModel posts = datas;
               List gb = json.decode(posts.items![i].content!);
               var quotes = gb.map((e) => new QuotesModel.fromJson(e)).toList();
-
+             
               return LocationListItem(
                   onTap: () => Navigator.push(
                       context,

@@ -6,6 +6,7 @@ class StoreData {
   static const offlineJsonDatakey = 'offlineData';
   static const offlinTrendingData = 'offlineTrending';
   static const offlinUserData = 'offlineUserQuotes';
+  static const offlinSettingsData = 'offlineSettings';
 
   static const offlinfeaturedData = 'featured';
   late final Box<dynamic> _box;

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:quotes_status_creator/models/BlogUserQuotesModel.dart';
 
 import '../models/love_quotes_english.dart';
@@ -85,6 +86,19 @@ class QuotesUINotifier extends ChangeNotifier {
   List<List<QuotesModel>> _mainQuotes = [];
   List<QuotesModel> _mainQuotesList = [];
   List<String> _categories = [];
+
+//Quotes with Ads
+  List<Object> _catWithAds = [];
+  get catWithAds => _catWithAds;
+  addAds() {
+    _catWithAds = List.from(_categories);
+
+    for (var i = catWithAds.length - 3; i >= 0; i -= 2) {
+      catWithAds.insert(i, SizedBox.shrink());
+    }
+    notifyListeners();
+  }
+
 // Featured Quotes
   List<TrendingQuotesModel> get featuredQuotes => _featuredQuotes;
   setFeaturedQuotes(value) {
@@ -189,8 +203,14 @@ class QuotesUINotifier extends ChangeNotifier {
     return _isTakingScreenshot;
   }
 
+  setTakingScreenShot(value) {
+    _isTakingScreenshot = value;
+    notifyListeners();
+  }
+
   changeUI(bool value) {
     _isTakingScreenshot = value;
+
     notifyListeners();
   }
 }

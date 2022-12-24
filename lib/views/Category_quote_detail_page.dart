@@ -2,15 +2,17 @@ import 'dart:core';
 
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:quotes_status_creator/Monetization/AdmobHelper/AdmobHelper.dart';
 import 'package:quotes_status_creator/Monetization/Banners/small_banner.dart';
-import 'package:quotes_status_creator/Monetization/NativeAds/native_banner.dart';
+import 'package:quotes_status_creator/Monetization/NativeAds/native_banner_feeds.dart';
 import 'package:quotes_status_creator/providers/QuotesUINotifier.dart';
 import 'package:quotes_status_creator/providers/ThemeProvider.dart';
 import 'package:quotes_status_creator/views/Editor/SingleEditor.dart';
 import 'package:quotes_status_creator/views/QuotesUI/TinderSwipe.dart';
 import 'package:social_share/social_share.dart';
 
+import '../Monetization/AdHelpers.dart';
 import '/Controllers/QuotesController.dart';
 import '/models/HiveModel/hive_quote_data_model.dart';
 import '/models/love_quotes_english.dart';
@@ -39,24 +41,51 @@ class CategoryQuoteDetailPage extends ConsumerStatefulWidget {
 class _CategoryQuoteDetailPageState
     extends ConsumerState<CategoryQuoteDetailPage> {
   final QuotesController controller = QuotesController();
-
-  final _scrollController = ScrollController();
-
+  final scrollcontroller = ScrollController();
   bool defaultCategory = true;
 
   bool defaultColor = true;
   late List quotesWithAds;
   @override
   void initState() {
-    quotesWithAds = List.from(widget.quoteList[0].content!.toList());
+    quotesWithAds = List.from(widget.quoteList[0].content!);
     // print("GB2:${quotesWithAds.first.toString()}");
+    debugPrint("GB2:${quotesWithAds.length.toString()}");
+
     insertAdtoList();
     super.initState();
   }
 
   void insertAdtoList() {
-    for (var i = quotesWithAds.length - 3; i >= 0; i -= 4) {
-      quotesWithAds.insert(i, SizedBox.shrink());
+    for (var i = quotesWithAds.length - 3; i >= 0; i -= 6) {
+      quotesWithAds.insert(
+          i,
+          NativeAd(
+            adUnitId: AdHelper.nativeGoogleTestAdUnitId,
+            factoryId: 'listTile',
+            request: AdRequest(),
+            listener: NativeAdListener(
+              // Called when an ad is successfully received.
+              onAdLoaded: (Ad ad) {
+                debugPrint("Ad native. loaded");
+              },
+              // Called when an ad request failed.
+              onAdFailedToLoad: (Ad ad, LoadAdError error) {
+                // Dispose the ad here to free resources.
+                ad.dispose();
+                print('Ad failed to load:native $error');
+              },
+              // Called when an ad opens an overlay that covers the screen.
+              onAdOpened: (Ad ad) => print('Ad opened.'),
+              // Called when an ad removes an overlay that covers the screen.
+              onAdClosed: (Ad ad) => print('Ad closed.'),
+              // Called when an impression occurs on the ad.
+              onAdImpression: (Ad ad) => print('Ad impression. native'),
+              // Called when a click is recorded for a NativeAd.
+              onAdClicked: (ad) => print('Ad clicked.native'),
+            ),
+          ));
+      ;
     }
   }
 
@@ -211,72 +240,74 @@ class _CategoryQuoteDetailPageState
           ]),
       body: ref.watch(mainQuotesProvider.notifier).defaultCategory
           ? InnerSwiper(widget.typeofQuote, widget.quoteList)
-          : Stack(alignment: Alignment.bottomRight, children: [
-              ListView.builder(
-                padding: const EdgeInsets.only(top: 4),
-                // itemCount: widget.quoteList[0].content!.length,
-                itemCount: quotesWithAds.length,
-                itemBuilder: (context, i) {
-                  final item = quotesWithAds[i];
-                  if (item is Widget) {
-                    return Container(child: const NativeBanner()
-                        // ,i.isOdd
-                        //     ? DynamicBanner(adsize: AdSize.largeBanner)
-                        //     :
-                        );
-                  }
-                  return Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
-                      children: [
-                        ElevatedQuotesCard(
-                            quote: widget.quoteList[0].content![i].msg,
-                            category: widget.typeofQuote,
-                            // notifier: quoteList[0].content![i].msg,
+          : Column(children: [
+              Expanded(
+                child: ListView.builder(
+                  cacheExtent:20 ,
+                    controller: scrollcontroller,
+                    padding: const EdgeInsets.only(top: 4),
+                    // itemCount: widget.quoteList[0].content!.length,
+                    itemCount: widget.quoteList[0].content!.length,
+                    itemBuilder: (context, i) {
+                      final item = quotesWithAds[i];
 
-                            copyCallback: () {
-                              admobHelper
-                                  .decideIntersialAd(ActionAds.counterShow);
-                              SocialShare.copyToClipboard(
-                                  widget.quoteList[0].content![i].msg);
-                              Fluttertoast.showToast(
-                                  msg: "copied to clipboard");
-                              // SnackBar snackBar = SnackBar(
-                              //   content: Text(
-                              //     "Copied to Clipboard",
-                              //     textAlign: TextAlign.center,
-                              //   ),
-                              // );
-                              // ScaffoldMessenger.of(context)
-                              //     .showSnackBar(snackBar);
-                            },
-                            editCallback: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => SimpleEditorPage(
-                                      title: widget.typeofQuote,
-                                      quote:
-                                          widget.quoteList[0].content![i].msg,
-                                    ),
-                                  ));
-                            },
-                            favoriteCallback: () {
-                              print("fb callback");
-                            },
-                            shareCallback: () {
-                              Fluttertoast.showToast(msg: "Share Using");
-                              SocialShare.shareOptions(
-                                  widget.quoteList[0].content![i].msg);
-                            },
-                            textClickcallBack: () {
-                              admobHelper
-                                  .decideIntersialAd(ActionAds.counterShow);
-                            }),
-                      ],
-                    ),
-                  );
-                },
+                      if (item is NativeAd && i != 1) {
+                        return NativeBannerFeeds();
+                        // return SizedBox(
+                        //     height: 50, child: AdWidget(ad: item..load()));
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Column(
+                          children: [
+                            ElevatedQuotesCard(
+                                quote: widget.quoteList[0].content![i].msg,
+                                category: widget.typeofQuote,
+                                // notifier: quoteList[0].content![i].msg,
+
+                                copyCallback: () {
+                                  admobHelper
+                                      .decideIntersialAd(ActionAds.counterShow);
+                                  SocialShare.copyToClipboard(
+                                      widget.quoteList[0].content![i].msg);
+                                  Fluttertoast.showToast(
+                                      msg: "copied to clipboard");
+                                  // SnackBar snackBar = SnackBar(
+                                  //   content: Text(
+                                  //     "Copied to Clipboard",
+                                  //     textAlign: TextAlign.center,
+                                  //   ),
+                                  // );
+                                  // ScaffoldMessenger.of(context)
+                                  //     .showSnackBar(snackBar);
+                                },
+                                editCallback: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => SimpleEditorPage(
+                                          title: widget.typeofQuote,
+                                          quote: widget
+                                              .quoteList[0].content![i].msg,
+                                        ),
+                                      ));
+                                },
+                                favoriteCallback: () {
+                                  print("fb callback");
+                                },
+                                shareCallback: () {
+                                  Fluttertoast.showToast(msg: "Share Using");
+                                  SocialShare.shareOptions(
+                                      widget.quoteList[0].content![i].msg);
+                                },
+                                textClickcallBack: () {
+                                  admobHelper
+                                      .decideIntersialAd(ActionAds.counterShow);
+                                }),
+                          ],
+                        ),
+                      );
+                    }),
               ),
             ]),
     );

@@ -121,6 +121,16 @@ class EditorNotifier extends ChangeNotifier {
   ];
 
   ///ads related
+  bool _isFav = false;
+
+  get isFav => _isFav;
+
+  setFav(value) {
+    _isFav = value;
+    notifyListeners();
+  }
+
+  ///
   /////Ads Counters
   int fontChangeCountAds = 0;
   int gradientChnageCountAds = 0;
@@ -252,6 +262,29 @@ class EditorNotifier extends ChangeNotifier {
   }
 
   void showInterstitialAd() {
+    if (interstitialAd == null) {
+      debugPrint('Warning: attempt to show interstitial before loaded.');
+      return;
+    }
+    interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+      onAdShowedFullScreenContent: (InterstitialAd ad) =>
+          debugPrint('ad onAdShowedFullScreenContent.'),
+      onAdDismissedFullScreenContent: (InterstitialAd ad) {
+        debugPrint('$ad onAdDismissedFullScreenContent.');
+        ad.dispose();
+        createInterstitialAd();
+      },
+      onAdFailedToShowFullScreenContent: (InterstitialAd ad, AdError error) {
+        debugPrint('$ad onAdFailedToShowFullScreenContent: $error');
+        ad.dispose();
+        createInterstitialAd();
+      },
+    );
+    interstitialAd!.show();
+    interstitialAd = null;
+  }
+
+  void showFavInterstitialAd() {
     if (interstitialAd == null) {
       debugPrint('Warning: attempt to show interstitial before loaded.');
       return;

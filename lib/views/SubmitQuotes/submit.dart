@@ -3,7 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_email_sender/flutter_email_sender.dart';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:quotes_status_creator/Monetization/NativeAds/native_banner.dart';
+
+import '../../Monetization/AdHelpers.dart';
 
 class SubmitQuotesPage extends StatefulWidget {
   final String title;
@@ -22,6 +25,53 @@ class _SubmitQuotesPageState extends State<SubmitQuotesPage> {
   final _bodyController = TextEditingController(
     text: '',
   );
+  static const int maxFailedLoadAttempts = 3;
+  InterstitialAd? interstitialAd;
+  int _numInterstitialLoadAttempts = 0;
+  void createInterstitialAd() {
+    InterstitialAd.load(
+        adUnitId: AdHelper.interstitialGoogleTestAdUnitId,
+        request: const AdRequest(),
+        adLoadCallback: InterstitialAdLoadCallback(
+          onAdLoaded: (InterstitialAd ad) {
+            debugPrint('$ad loaded');
+            interstitialAd = ad;
+            _numInterstitialLoadAttempts = 0;
+            showInterstitialAd();
+            // _interstitialAd!.setImmersiveMode(true);
+          },
+          onAdFailedToLoad: (LoadAdError error) {
+            debugPrint('InterstitialAd failed to load: $error.');
+            _numInterstitialLoadAttempts += 1;
+            interstitialAd = null;
+            if (_numInterstitialLoadAttempts < maxFailedLoadAttempts) {
+              createInterstitialAd();
+            }
+          },
+        ));
+  }
+
+  void showInterstitialAd() {
+    if (interstitialAd == null) {
+      debugPrint('Warning: attempt to show interstitial before loaded.');
+      return;
+    }
+    interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+      onAdShowedFullScreenContent: (InterstitialAd ad) =>
+          debugPrint('ad onAdShowedFullScreenContent.'),
+      onAdDismissedFullScreenContent: (InterstitialAd ad) {
+        debugPrint('$ad onAdDismissedFullScreenContent.');
+        ad.dispose();
+      },
+      onAdFailedToShowFullScreenContent: (InterstitialAd ad, AdError error) {
+        debugPrint('$ad onAdFailedToShowFullScreenContent: $error');
+        ad.dispose();
+        createInterstitialAd();
+      },
+    );
+    interstitialAd!.show();
+    interstitialAd = null;
+  }
 
   Future<void> send() async {
     String platformResponse;
@@ -48,6 +98,13 @@ class _SubmitQuotesPageState extends State<SubmitQuotesPage> {
     } catch (error) {
       platformResponse = error.toString();
     }
+  }
+
+  @override
+  void initState() {
+    createInterstitialAd();
+
+    super.initState();
   }
 
   @override

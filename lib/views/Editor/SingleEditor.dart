@@ -4,7 +4,9 @@ import 'dart:typed_data';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
+import '../../Controllers/QuotesController.dart';
 import '../../Monetization/Banners/small_banner.dart';
+import '../../models/HiveModel/hive_quote_data_model.dart';
 import '/views/Editor/EditorNotifier.dart';
 import '/views/Editor/Messenger.dart';
 import 'package:flutter/material.dart';
@@ -40,13 +42,16 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
 
   final TextEditingController _nameController = TextEditingController();
   late String mainQuote;
+  late String title;
   @override
   void initState() {
     mainQuote = widget.quote;
+    title = widget.title;
     ref.read(editorNotifier.notifier).createInterstitialAd();
     super.initState();
   }
 
+  bool isFavadded = false;
   showInternetDialog(context, String text) {
     showDialog(
         context: context,
@@ -640,6 +645,34 @@ class _SimpleEditorPageState extends ConsumerState<SimpleEditorPage> {
               const Text("Share", style: labelStyle),
             ],
           ),
+          if (title.contains('notify'))
+            Column(
+              children: [
+                IconButton(
+                    tooltip: 'Add to Favourite ',
+                    onPressed: () {
+                      HiveQuoteDataModel quotes = HiveQuoteDataModel(
+                          category: "notification",
+                          id: 1,
+                          isFavourite: true,
+                          language: 'hinglish',
+                          quote: mainQuote);
+
+                      isFavadded = !isFavadded;
+
+                      QuotesController().addNotificationQuotes(quotes);
+                      ref.read(editorNotifier.notifier).showFavInterstitialAd();
+                      ref.read(editorNotifier.notifier).setFav(isFavadded);
+                    },
+                    icon: Icon(
+                      ref.read(editorNotifier.notifier).isFav
+                          ? Icons.favorite
+                          : Icons.favorite_border_outlined,
+                      size: 30,
+                    )),
+                const Text("Favourite", style: labelStyle),
+              ],
+            ),
           Column(
             children: [
               IconButton(

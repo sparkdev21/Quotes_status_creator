@@ -44,7 +44,6 @@ class MainDashBoard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final WIDTH = MediaQuery.of(context).size.width * 20;
     return NotificationListener<ScrollNotification>(
       onNotification: _handleScrollNotification,
       child: ListView(
@@ -89,7 +88,10 @@ class MainDashBoard extends StatelessWidget {
                                 type: PageTransitionType.leftToRight),
                           );
                         },
-                        icon: Icon(Icons.keyboard_double_arrow_right_outlined)),
+                        icon: Icon(
+                          Icons.keyboard_double_arrow_right_outlined,
+                          color: Color(0x00EBB378),
+                        )),
                   ],
                 )),
 

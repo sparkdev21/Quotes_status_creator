@@ -17,7 +17,7 @@ import 'about_us.dart';
 // ignore: must_be_immutable
 class NavigationDrawer extends ConsumerWidget {
   NavigationDrawer({Key? key}) : super(key: key);
-  HideOnScroll hideOnScroll = HideOnScroll();
+  HomePage hideOnScroll = HomePage();
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Drawer(

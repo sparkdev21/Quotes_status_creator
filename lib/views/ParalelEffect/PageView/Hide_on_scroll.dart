@@ -1,12 +1,16 @@
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:quotes_status_creator/views/widgets/SettingsPAge.dart';
 
 import '../../../Controllers/OfflineHiveDataControllers.dart';
 import '../../../Controllers/QuotesController.dart';
 import '../../../Monetization/AdHelpers.dart';
 import '../../../Monetization/NativeAds/native_banner.dart';
+import '../../../repositories/Settings/Settings.dart';
+import '../../QuotesUI/FeaturedQuotes.dart';
+import '../../QuotesUI/TrendingQuotes.dart';
+import '../../widgets/SettingsPAge.dart';
 import '/views/QuotesUI/Dashboard.dart';
 import '/views/QuotesUI/UserQuotesPage.dart';
 import 'package:flutter/material.dart';
@@ -14,14 +18,14 @@ import 'package:flutter/material.dart';
 import '../../widgets/Sidebar.dart';
 import '../parallelx_effect.dart';
 
-class HideOnScroll extends StatefulWidget {
-  const HideOnScroll({Key? key}) : super(key: key);
+class HomePage extends ConsumerStatefulWidget {
+  const HomePage({super.key});
 
   @override
   _HideOnScrollState createState() => _HideOnScrollState();
 }
 
-class _HideOnScrollState extends State<HideOnScroll>
+class _HideOnScrollState extends ConsumerState<HomePage>
     with SingleTickerProviderStateMixin {
   int selectedIndex = 0;
   late AnimationController animationController;
@@ -101,6 +105,7 @@ class _HideOnScrollState extends State<HideOnScroll>
         },
       ),
       SettingsUI()
+
       // SubmitPage(),
       // InnerSwiper(),
       // CategoryGrid()
@@ -112,6 +117,11 @@ class _HideOnScrollState extends State<HideOnScroll>
 
   @override
   void initState() {
+    ref.read(featuredQuotesProvider);
+
+    ref.read(trendingQuotesProvider);
+    ref.read(userQuotesProvider);
+    ref.read(settingsDataProvider);
     super.initState();
     animationController =
         AnimationController(vsync: this, duration: Duration(milliseconds: 300));

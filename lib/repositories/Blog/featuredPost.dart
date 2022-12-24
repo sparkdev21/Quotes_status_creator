@@ -26,15 +26,15 @@ class FeaturedRepository {
       results = TrendingModel.fromJson(jsonParsed);
       results.content =
           results.content!.replaceAll(RegExp(r'<script>|</script>'), "");
-      print("else Hive code Exceuted");
-      Fluttertoast.showToast(msg: "Fetched from hive");
+      Fluttertoast.showToast(
+          msg: "Fetched from hive  :Featured Data :$results");
 
       return results;
     }
 
     _fetchFromInternet() async {
       results = await http.getFeaturedQuotes(url);
-      showToast(debug, "Fetched from Internet");
+      showToast(debug, "Fetched from Internet :Featured Data :$results");
       return results;
     }
 

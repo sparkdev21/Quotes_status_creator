@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../../Monetization/Banners/small_banner.dart';
+import '../../Monetization/NativeAds/bigNativebanner.dart';
 import '../../post_list_view_hive_data.dart';
 import '/providers/QuotesUINotifier.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +16,6 @@ import 'FeaturedQuotes.dart';
 import 'TrendingQuotes.dart';
 
 class LatestQuotes extends ConsumerWidget {
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     PostModel datas = ref.watch(mainQuotesProvider.notifier).postData;
@@ -93,10 +93,13 @@ class LatestQuotes extends ConsumerWidget {
                       DateTime dt2 = DateTime.parse(posts.items![1].published!);
                       print("d1:$dt1:dt2:$dt2");
 
-                      if (i < 5 && dt1.compareTo(dt2) > 0) {
+                      if (i < 6 && dt1.compareTo(dt2) > 0) {
                         List gb = json.decode(posts.items![i].content!);
                         var quotes =
                             gb.map((e) => new QuotesModel.fromJson(e)).toList();
+                        if (i == 4) {
+                          return BigNativeBanner();
+                        }
 
                         return Stack(
                           children: [

@@ -47,6 +47,19 @@ class QuotesController extends ChangeNotifier {
     print("added ");
   }
 
+  Future<bool> addNotificationQuotes(HiveQuoteDataModel quote) async {
+    if (await store.isCategoryQuoteExist(quote) == true) {
+      await store.deleteCategoryQuote(quote);
+      print("alreadyxa deleted");
+      Fluttertoast.showToast(msg: "Removed from Favourites");
+      return false;
+    }
+    await store.addCategoryQuotes(quote);
+    Fluttertoast.showToast(msg: "Added to Favourites");
+    return true;
+    print("added ");
+  }
+
   Future<bool> isCatFav(HiveQuoteDataModel quote) async {
     if (await store.isCategoryQuoteExist(quote) == true) {
       return true;

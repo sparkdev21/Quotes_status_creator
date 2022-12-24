@@ -3,20 +3,17 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../AdHelpers.dart';
 
-class NativeBanner extends StatefulWidget {
-  const NativeBanner({super.key});
+class NativeBannerFeeds extends StatefulWidget {
+  const NativeBannerFeeds({super.key});
 
   @override
-  State<NativeBanner> createState() => _NativeBannerState();
+  State<NativeBannerFeeds> createState() => _NativeBannerFeedsState();
 }
 
-class _NativeBannerState extends State<NativeBanner> {
+class _NativeBannerFeedsState extends State<NativeBannerFeeds>
+    with AutomaticKeepAliveClientMixin {
   late NativeAd nativeAd;
   bool isloaded = false;
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-  }
 
   @override
   void dispose() {
@@ -59,6 +56,7 @@ class _NativeBannerState extends State<NativeBanner> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return isloaded
         ? SizedBox(
             height: 50,
@@ -66,4 +64,8 @@ class _NativeBannerState extends State<NativeBanner> {
           )
         : SizedBox.shrink();
   }
+
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
 }

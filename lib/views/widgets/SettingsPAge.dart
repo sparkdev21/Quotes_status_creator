@@ -55,7 +55,7 @@ class _SettingsUIState extends State<SettingsUI> {
       body: Consumer(builder: (context, ref, _) {
         return SafeArea(
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Flexible(
@@ -99,8 +99,10 @@ class _SettingsUIState extends State<SettingsUI> {
                         'Choose Colors',
                         style: FlutterFlowTheme.of(context).subtitle2,
                       ),
-                      Flexible(
+                      Expanded(
+                        flex: 3,
                         child: ListView(
+                          shrinkWrap: false,
                           children: [
                             for (int i = 0; i < themeColors.length; i++)
                               GestureDetector(
@@ -136,8 +138,9 @@ class _SettingsUIState extends State<SettingsUI> {
                 ),
               ),
               Flexible(
+                flex: 1,
                 child: Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
+                  padding: const EdgeInsets.only(bottom: 8.0, top: 6),
                   child: DynamicBanner(adsize: AdSize.largeBanner),
                 ),
               )

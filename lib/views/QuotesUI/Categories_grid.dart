@@ -39,8 +39,15 @@ class CategoryGrid extends StatelessWidget {
                     tileMode: TileMode.mirror,
                   ).createShader(bounds),
                   child: CachedNetworkImage(
+                    errorWidget: (context, url, error) {
+                      return Image.asset('assets/images/back.png');
+                    },
+                    imageBuilder: (context, image) => CircleAvatar(
+                      backgroundImage: AssetImage('assets/images/back.png'),
+                      radius: 150,
+                    ),
                     placeholder: ((context, url) =>
-                        Center(child: CircularProgressIndicator.adaptive())),
+                        Center(child: Image.asset('assets/images/back.png'))),
                     imageUrl: quotes[index].image!,
                     fit: BoxFit.cover,
                   ),

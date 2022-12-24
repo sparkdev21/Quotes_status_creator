@@ -5,6 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:quotes_status_creator/Monetization/AdmobHelper/AdmobHelper.dart';
 import 'package:quotes_status_creator/Monetization/Banners/small_banner.dart';
+import 'package:quotes_status_creator/Monetization/NativeAds/native_banner_feeds.dart';
 import 'package:quotes_status_creator/utils/PageTrasition.dart';
 import 'package:quotes_status_creator/views/Editor/SingleEditor.dart';
 import 'package:social_share/social_share.dart';
@@ -46,8 +47,6 @@ final trendingQuotesProvider =
 });
 
 class TrendingPage extends ConsumerWidget {
-  final bestGradints = [0, 9, 15, 10, 75, 88, 100, 114];
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(mainQuotesProvider);
@@ -71,7 +70,13 @@ class TrendingPage extends ConsumerWidget {
           scrollDirection: Axis.vertical,
           // shrinkWrap: false,
           itemCount: datas.length,
-          itemBuilder: (context, int i) {
+          itemBuilder: (context, int i) { 
+            if (i == datas.length / 2 
+            ) {
+              debugPrint("Ad native ${datas.length}");
+              return NativeBannerFeeds();
+            }
+
             return // Generated code for this Container Widget...
                 Padding(
               padding: const EdgeInsets.fromLTRB(20, 13, 25, 8),
@@ -90,24 +95,6 @@ class TrendingPage extends ConsumerWidget {
                           .cardColor, // Theme.of(context).colorScheme.secondary,
                       Theme.of(context).backgroundColor,
                     ])),
-                // BoxDecoration(
-                //   borderRadius: BorderRadius.circular(16),
-                //   gradient: LinearGradient(
-                //       colors: GradientColors
-                //           .values[math.Random().nextInt(100)]),
-                //   boxShadow: [
-                //     BoxShadow(
-                //       blurRadius: 12,
-                //       // color: Colors.red.shade900,
-                //       offset: Offset(1, -2),
-                //       spreadRadius: 1,
-                //     )
-                //   ],
-                //   border: Border.all(
-                //     color: Colors.blue,
-                //     width: 1,
-                //   ),
-                // ),
                 child: Stack(
                   children: [
                     Padding(

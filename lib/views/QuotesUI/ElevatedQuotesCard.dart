@@ -61,7 +61,7 @@ class ElevatedQuotesCard extends StatelessWidget {
                             child: SizedBox(
                               width: double.infinity,
                               child: AutoSizeText(
-                                "❝ ${quote.split(',').join(',')}",
+                                "❝ ${quote.split(',').join(',')} ",
                                 maxLines: 4,
                                 minFontSize: 16,
                                 overflow: TextOverflow.visible,

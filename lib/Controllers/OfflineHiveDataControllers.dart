@@ -27,8 +27,15 @@ class OfflineHiveDataController {
     return await store
         .retriveResponseData<String>(StoreData.offlinTrendingData);
   }
+  Future<String?> retriveSettingsData() async {
+    return await store
+        .retriveResponseData<String>(StoreData.offlinSettingsData);
+  }
 
   Future<void> storeFeaturedData(String value) async {
+    await store.putData(StoreData.offlinfeaturedData, value);
+  }
+  Future<void> storeSettingsData(String value) async {
     await store.putData(StoreData.offlinfeaturedData, value);
   }
   Future<void> storeUserQuotesData(String value) async {

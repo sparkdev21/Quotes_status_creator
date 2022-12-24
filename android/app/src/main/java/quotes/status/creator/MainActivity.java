@@ -10,12 +10,17 @@ public class MainActivity extends FlutterActivity {
   @Override
   public void configureFlutterEngine(FlutterEngine flutterEngine) {
     super.configureFlutterEngine(flutterEngine);
-    // final ListTileNativeAdFactory factory = new ListTileNativeAdFactory(getLayoutInflater());
+    // final NativeAdFactoryExample factory = new ListTileNativeAdFactory(getLayoutInflater());
+ 
+        GoogleMobileAdsPlugin.registerNativeAdFactory(flutterEngine, "bigTile", new NativeAdFactoryExample(getLayoutInflater()));
+
     GoogleMobileAdsPlugin.registerNativeAdFactory(flutterEngine, "listTile", new ListTileNativeAdFactory(getContext()));
   }
 
   @Override
   public void cleanUpFlutterEngine(FlutterEngine flutterEngine) {
     GoogleMobileAdsPlugin.unregisterNativeAdFactory(flutterEngine, "listTile");
+    GoogleMobileAdsPlugin.unregisterNativeAdFactory(flutterEngine, "bigTile");
+
   }
 }

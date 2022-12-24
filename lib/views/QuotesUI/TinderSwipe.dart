@@ -34,7 +34,6 @@ class InnerSwiper extends StatefulWidget {
 class _InnerSwiperState extends State<InnerSwiper> {
   SwiperController? controller;
   ScreenshotController? screenshotController;
-  GlobalKey _repaintBoundaryKey = new GlobalKey();
   bool takingScreenshot = false;
 
   int val = 1;
@@ -69,7 +68,6 @@ class _InnerSwiperState extends State<InnerSwiper> {
               flex: 3,
               child: Consumer(builder: (context, WidgetRef ref, _) {
                 ref.watch(mainQuotesProvider);
-
                 return Screenshot(
                   controller: screenshotController!,
                   child: Swiper(
@@ -82,33 +80,16 @@ class _InnerSwiperState extends State<InnerSwiper> {
                         print("adts: rand ${Random().nextInt(2)}");
                         admobHelper.decideIntersialAd(ActionAds.directShow);
                       }
-                      // val = value;
-                      // indx = value;
-                      // rand.nextInt(100);
-
-                      // setState(() {});
                     },
                     indicatorLayout: PageIndicatorLayout.NONE,
                     loop: true,
-                    viewportFraction: 0.8,
+                    viewportFraction: ref
+                            .watch(mainQuotesProvider.notifier)
+                            .isTakingScreenshot
+                        ? 1
+                        : 0.8,
                     autoplay: false,
-                    autoplayDelay: 5000,
                     itemBuilder: (BuildContext context, int index) {
-                      // if (index == 9) {
-                      //   return Container(
-                      //     width: 300,
-                      //     height: MediaQuery.of(context).size.height * 0.28,
-                      //     decoration: BoxDecoration(
-                      //         color: Colors.red,
-                      //         borderRadius: BorderRadius.circular(20)),
-                      //     child: FittedBox(
-                      //       child: Image.network(
-                      //         imageList[0],
-                      //         fit: BoxFit.fill,
-                      //       ),
-                      //     ),
-                      //   );
-                      // }
                       return Stack(
                         alignment: Alignment.center,
                         children: [
@@ -121,7 +102,13 @@ class _InnerSwiperState extends State<InnerSwiper> {
                                   widget.quotes[0].content![index].msg);
                             },
                             child: StackQuotes(
-                                widget.quotes[0].content![index].msg, val),
+                              ref
+                                      .watch(mainQuotesProvider.notifier)
+                                      .isTakingScreenshot
+                                  ? widget.quotes[0].content![indx].msg
+                                  : widget.quotes[0].content![index].msg,
+                              val,
+                            ),
                           )),
                         ],
                       );
@@ -132,7 +119,7 @@ class _InnerSwiperState extends State<InnerSwiper> {
                     layout: ref
                             .watch(mainQuotesProvider.notifier)
                             .isTakingScreenshot
-                        ? SwiperLayout.STACK
+                        ? SwiperLayout.DEFAULT
                         : SwiperLayout.TINDER,
                   ),
                 );
@@ -142,7 +129,6 @@ class _InnerSwiperState extends State<InnerSwiper> {
               indx: indx,
               category: widget.category,
               msg: widget.quotes[0].content![indx].msg,
-              rkey: _repaintBoundaryKey,
               sController: screenshotController!,
             )
           ],
@@ -153,14 +139,13 @@ class _InnerSwiperState extends State<InnerSwiper> {
 }
 
 class _buildButtons extends StatelessWidget {
-  const _buildButtons(
-      {Key? key,
-      required this.indx,
-      required this.msg,
-      required this.category,
-      required this.sController,
-      required this.rkey})
-      : super(key: key);
+  const _buildButtons({
+    Key? key,
+    required this.indx,
+    required this.msg,
+    required this.category,
+    required this.sController,
+  }) : super(key: key);
 
   final int indx;
 
@@ -168,7 +153,6 @@ class _buildButtons extends StatelessWidget {
 
   final String category;
   final ScreenshotController sController;
-  final GlobalKey rkey;
 
   @override
   Widget build(BuildContext context) {
@@ -196,16 +180,18 @@ class _buildButtons extends StatelessWidget {
             return FloatingActionButton.small(
                 heroTag: "d",
                 onPressed: () async {
-                  AdmobHelper().showInterad();
-                  // ref.read(mainQuotesProvider.notifier).changeUI(true);
+                  ref.read(mainQuotesProvider.notifier).changeUI(true);
                   saveTextImageToGallery(context, sController);
                   // await Future.delayed(Duration(seconds: 2),
                   //         saveTextImageToGallery(context, sController))
                   //     .then((value) => ref
                   //         .read(mainQuotesProvider.notifier)
                   //         .changeUI(false));
-                  admobHelper.decideIntersialAd(ActionAds.directShow);
-                  ref.read(mainQuotesProvider.notifier).changeUI(false);
+                  admobHelper.showDownloadInterad(context);
+                  Future.delayed(
+                    Duration(seconds: 1),
+                  ).then((value) =>
+                      ref.read(mainQuotesProvider.notifier).changeUI(false));
                 },
                 child: Icon(
                   Icons.download,

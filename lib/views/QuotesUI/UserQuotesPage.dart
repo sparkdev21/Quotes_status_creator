@@ -4,7 +4,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:quotes_status_creator/Monetization/NativeAds/native_banner.dart';
+import 'package:quotes_status_creator/Monetization/NativeAds/native_banner_feeds.dart';
 import 'package:quotes_status_creator/repositories/Blog/userQuotesRepository.dart';
 import 'package:quotes_status_creator/views/SubmitQuotes/submit.dart';
 import 'package:social_share/social_share.dart';
@@ -115,12 +115,12 @@ class _UserQuotesBlogPageState extends ConsumerState<UserQuotesBlogPage> {
           body: ListView.builder(
               scrollDirection: Axis.vertical,
               shrinkWrap: false,
-              itemCount: dataWithAds.length,
+              itemCount: datas.length,
               addAutomaticKeepAlives: true,
               itemBuilder: (context, int i) {
                 final item = dataWithAds[i];
-                if (item is Widget) {
-                  return const NativeBanner();
+                if (item is Widget && i != 1) {
+                  return NativeBannerFeeds();
                 }
                 return Padding(
                     padding: const EdgeInsets.fromLTRB(20, 13, 25, 8),
@@ -171,7 +171,7 @@ class _UserQuotesBlogPageState extends ConsumerState<UserQuotesBlogPage> {
                         // ),
                         child: Stack(children: [
                           Banner(
-                              message: "@{datas[i].userid}",
+                              message: "${datas[i].userid}",
                               textStyle: TextStyle(
                                   fontSize: 10,
                                   color: Theme.of(context)
@@ -179,12 +179,14 @@ class _UserQuotesBlogPageState extends ConsumerState<UserQuotesBlogPage> {
                                       .titleSmall
                                       ?.color,
                                   fontWeight: FontWeight.bold),
-                              color: Theme.of(context).colorScheme.background,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .secondaryContainer,
                               location: BannerLocation.topStart,
                               child: GestureDetector(
                                 onTap: () {
                                   AppUtil.lauchInstagram(
-                                      'https://www.instagram.com/@{datas[i].userid}');
+                                      'https://www.instagram.com/${datas[i].userid}');
                                 },
                               )),
                           Padding(
@@ -193,7 +195,7 @@ class _UserQuotesBlogPageState extends ConsumerState<UserQuotesBlogPage> {
                                       MediaQuery.of(context).size.width * 0.79),
                               child: Align(
                                 alignment: Alignment.topRight,
-                                child: buttons(context, "datas[i].quote"),
+                                child: buttons(context, "${datas[i].quote}"),
                               )),
                           Column(
                             children: [
